@@ -407,6 +407,24 @@ function publicPostUrl(handle: string, postId: string): string {
   return `https://x.com/${h}/status/${id}`;
 }
 
+/**
+ * Vibe headline from lab split percentages — same rules as the tail of {@link scoreSlopVibes}
+ * (for UI after Grok reallocates toss-up into Open vs Anthropic).
+ */
+export function vibeHeadlineFromLabPercents(o: number, a: number, t: number): string {
+  if (t >= o && t >= a && t >= 38) {
+    return "Both-sides AI maximalist";
+  }
+  const delta = o - a;
+  if (delta > 40) return "Really thought Sora was something special";
+  if (delta > 20) return "Believes Codex is better but hasn't spent much time with CC";
+  if (delta > 8) return "Mild GPT energy";
+  if (delta < -40) return "Rate limit kink";
+  if (delta < -20) return "Anthropic-coded posting reflex";
+  if (delta < -8) return "Slightly Negative on Data Centers but only with Bushwick girls";
+  return "Whatever model is cool or Bard user";
+}
+
 export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
   const { handle, displayName, posts, meta } = input;
   const now = Date.now();
@@ -587,23 +605,13 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
   const aiRelevantPct =
     totalPosts > 0 ? Math.round((1000 * aiRelevantPostCount) / totalPosts) / 10 : 0;
 
-  let vibeHeadline = "Chaos neutral reply guy";
-
+  let vibeHeadline: string;
   if (aiRelevantPostCount === 0 && totalPosts >= 3) {
     vibeHeadline = "Terminally offline — AI-wise";
   } else if (labSum < 1e-6 && aiRelevantPostCount > 0) {
     vibeHeadline = "AI timeline, no lab fingerprints";
-  } else if (t >= o && t >= a && t >= 38) {
-    vibeHeadline = "Both-sides AI maximalist";
   } else {
-    const delta = o - a;
-    if (delta > 40) vibeHeadline = "Really thought Sora was something special";
-    else if (delta > 20) vibeHeadline = "Believes Codex is better but hasn't spent much time with CC";
-    else if (delta > 8) vibeHeadline = "Mild GPT energy";
-    else if (delta < -40) vibeHeadline = "Rate limit kink";
-    else if (delta < -20) vibeHeadline = "Anthropic-coded posting reflex";
-    else if (delta < -8) vibeHeadline = "Slightly Negative on Data Centers but only with Bushwick girls";
-    else vibeHeadline = "Whatever model is cool or Bard user";
+    vibeHeadline = vibeHeadlineFromLabPercents(o, a, t);
   }
 
   const sortedReceipts = sortReceiptsByCreatedAtDesc(receipts);

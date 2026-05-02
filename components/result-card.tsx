@@ -15,6 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ScoreSpectrum } from "@/components/score-spectrum";
+import { vibeHeadlineFromLabPercents } from "@/lib/scoring/heuristic";
 import type { SlopScoreResult } from "@/lib/scoring/types";
 
 type Props = {
@@ -69,6 +70,15 @@ export function ResultCard({ result }: Props) {
           ? "Cached posts"
           : "Fallback sample";
 
+  const displayHeadline =
+    refereeScores !== null
+      ? vibeHeadlineFromLabPercents(
+          refereeScores.openAI,
+          refereeScores.anthropic,
+          refereeScores.tossUp,
+        )
+      : vibeHeadline;
+
   const showRefereeButton =
     scores.tossUp > 0 && receipts.some((r) => r.isTossUpContributor === true);
   const displayScores = refereeScores ?? scores;
@@ -121,7 +131,7 @@ export function ResultCard({ result }: Props) {
           )}
         </CardTitle>
         <CardDescription className="mt-1 max-w-prose text-pretty">
-          {vibeHeadline}
+          {displayHeadline}
         </CardDescription>
         <CardAction className="justify-self-end">
           <Badge
@@ -209,27 +219,7 @@ export function ResultCard({ result }: Props) {
         )}
         {showRefereeButton ? (
           <div className="flex flex-col items-center gap-2 border-t border-border/50 pt-4">
-            {refereeScores ? (
-              <div className="flex flex-col items-center gap-1.5 text-center">
-                <p className="max-w-sm text-sm text-muted-foreground">
-                  Grok already ran on this card. Reset to see heuristic-only scores, then you can
-                  run Grok again.
-                </p>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-auto min-h-0 py-1.5 text-muted-foreground hover:text-foreground"
-                  onClick={() => {
-                    setRefereeScores(null);
-                    setGrokRecap(null);
-                    setRefereeError(null);
-                  }}
-                >
-                  Reset Grok · back to heuristic-only
-                </Button>
-              </div>
-            ) : (
+            {!refereeScores ? (
               <Button
                 type="button"
                 className="min-w-[12rem] animate-in fade-in duration-300 motion-safe:transition-[transform,box-shadow] motion-safe:duration-200 motion-safe:ease-out motion-safe:hover:-translate-y-0.5 motion-safe:hover:shadow-lg motion-safe:active:translate-y-px motion-safe:active:shadow-sm gap-2"
@@ -246,7 +236,7 @@ export function ResultCard({ result }: Props) {
                   "Let Grok Cook"
                 )}
               </Button>
-            )}
+            ) : null}
             {grokRecap ? (
               <div className="w-full max-w-prose rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5 text-left">
                 <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-muted-foreground">
