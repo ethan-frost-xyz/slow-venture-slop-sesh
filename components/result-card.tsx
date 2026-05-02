@@ -51,7 +51,7 @@ export function ResultCard({ result }: Props) {
           )}
         </CardTitle>
         <CardDescription className="mt-1 max-w-prose text-pretty">
-          {vibeHeadline} · slop alignment (posting-style similarity only)
+          {vibeHeadline}
         </CardDescription>
         <CardAction className="justify-self-end">
           <Badge
