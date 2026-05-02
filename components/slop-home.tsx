@@ -114,14 +114,7 @@ export function SlopHome() {
       </main>
 
       <footer className="mt-auto border-t border-border/50 px-4 py-4 text-center text-[0.7rem] text-muted-foreground">
-        Hackathon MVP · Live posts optional via{" "}
-        <code className="rounded bg-muted px-1 py-0.5 font-mono">
-          SLOP_TRY_LIVE_X=1
-        </code>{" "}
-        +{" "}
-        <code className="rounded bg-muted px-1 py-0.5 font-mono">
-          X_BEARER_TOKEN
-        </code>
+        Ethan Frost 2026
       </footer>
     </div>
   );
