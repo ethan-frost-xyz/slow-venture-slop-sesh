@@ -42,7 +42,7 @@ export class XPostProvider implements PostProvider {
       }
 
       const timelineRes = await fetch(
-        `https://api.twitter.com/2/users/${userId}/tweets?max_results=10&tweet.fields=created_at,text`,
+        `https://api.twitter.com/2/users/${userId}/tweets?max_results=50&tweet.fields=created_at,text`,
         {
           headers: { Authorization: `Bearer ${token}` },
           cache: "no-store",
