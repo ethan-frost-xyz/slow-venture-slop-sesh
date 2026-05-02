@@ -209,7 +209,6 @@ const ANTHROPIC_DIRECT_TERMS = [
   "ultrareview",
   "claude cowork",
   "claude projects",
-  "computer use",
   "extended thinking",
   "prompt caching",
   "artifacts",
