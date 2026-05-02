@@ -21,6 +21,8 @@ export type ScoreReceipt = {
   postUrl?: string;
   /** Like/favorite count when the ingest layer provided it */
   likeCount?: number;
+  /** Strong negative about a flagged lab; scoring credits the other lab */
+  negativeLabMention?: boolean;
 };
 
 export type SlopScoreResult = {

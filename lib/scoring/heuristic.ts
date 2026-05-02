@@ -362,7 +362,7 @@ function recencyWeight(createdAt: string, now: number): number {
   const t = new Date(createdAt).getTime();
   if (Number.isNaN(t)) return 0.5;
   const days = (now - t) / 86400000;
-  return Math.exp(-days / 50);
+  return Math.exp(-days / 100);
 }
 
 function truncate(s: string, max: number): string {
@@ -423,7 +423,6 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
   const receipts: ScoreReceipt[] = [];
   const tagSet = new Set<string>();
 
-  const CROSS_WEIGHT = 0.6;
   const BASE_POS = 10;
   const BOOST_UNIT = 3;
   const ONLY_ONE_LAB_MULT = 1.35;
@@ -462,7 +461,9 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
 
       if (openMFinal) {
         if (neg) {
-          dAnth += CROSS_WEIGHT * BASE_POS * w;
+          // Credit the other lab like a quiet positive for that lab (same w/BASE/lean as non-neg branch).
+          dAnth +=
+            w * BASE_POS * 0.85 * (!anthMFinal ? 1.1 : 0.95);
           dOpen += 0;
         } else if (boostN > 0) {
           dOpen +=
@@ -477,7 +478,8 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
 
       if (anthMFinal) {
         if (neg) {
-          dOpen += CROSS_WEIGHT * BASE_POS * w;
+          dOpen +=
+            w * BASE_POS * 0.85 * (!openMFinal ? 1.1 : 0.95);
           dAnth += 0;
         } else if (boostN > 0) {
           dAnth +=
@@ -495,11 +497,13 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
     const postAnth = Math.max(0, dAnth);
     const postMass = postOpen + postAnth;
 
-    if (openMFinal && anthMFinal) {
+    // Bucket by where points landed (negative cross-lab credits the other lab).
+    const EPS = 1e-9;
+    if (postOpen > EPS && postAnth > EPS) {
       tossUpPoints += postMass;
-    } else if (openMFinal) {
+    } else if (postOpen > EPS) {
       openAIPoints += postMass;
-    } else if (anthMFinal) {
+    } else if (postAnth > EPS) {
       anthropicPoints += postMass;
     }
 
@@ -509,7 +513,7 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
       if (anthMFinal) bits.push("Anthropic/Claude signal");
       if (openaiVer || anthropicVer) bits.push("version signal");
       if (neg && (openMFinal || anthMFinal))
-        bits.push("negative → cross-lab boost");
+        bits.push("negative → other lab");
       if (boostN > 0) bits.push("booster phrasing");
       if (hasHypeSignal(textNorm) && !openM && !anthM) bits.push("hype only");
 
@@ -529,6 +533,9 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
         reason: bits.join(" · "),
         ...(flaggedOpenAI.length > 0 ? { flaggedOpenAI } : {}),
         ...(flaggedAnthropic.length > 0 ? { flaggedAnthropic } : {}),
+        ...(neg && (openMFinal || anthMFinal)
+          ? { negativeLabMention: true }
+          : {}),
         text: truncate(p.text, 140),
         createdAt: p.createdAt,
         postUrl: publicPostUrl(handle, p.id),

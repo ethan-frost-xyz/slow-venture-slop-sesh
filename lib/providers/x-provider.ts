@@ -45,7 +45,7 @@ export class XPostProvider implements PostProvider {
       const displayName = userJson.data?.name?.trim() || undefined;
 
       const timelineQuery = new URLSearchParams({
-        max_results: "100",
+        max_results: "200",
         "tweet.fields": "created_at,text,public_metrics,referenced_tweets",
         expansions: "referenced_tweets.id",
       });

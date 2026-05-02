@@ -105,7 +105,15 @@ export function ResultCard({ result }: Props) {
                 key={`${r.postUrl ?? r.text}-${i}`}
                 className="rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-sm leading-snug"
               >
-                <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                  {r.negativeLabMention ? (
+                    <Badge
+                      variant="outline"
+                      className="shrink-0 border-amber-500/40 bg-amber-500/10 text-[0.65rem] font-medium text-amber-950 dark:text-amber-100"
+                    >
+                      Negative
+                    </Badge>
+                  ) : null}
                   <span className="text-xs text-muted-foreground">{r.reason}</span>
                   {typeof r.likeCount === "number" ? (
                     <span className="text-xs text-muted-foreground">
