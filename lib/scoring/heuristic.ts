@@ -300,10 +300,6 @@ function hasBooster(textNorm: string): number {
   return Math.min(n, 3);
 }
 
-function clamp(n: number, lo: number, hi: number): number {
-  return Math.max(lo, Math.min(hi, n));
-}
-
 function normalizeText(s: string): string {
   return s.toLowerCase();
 }
@@ -328,32 +324,16 @@ function publicPostUrl(handle: string, postId: string): string {
   return `https://x.com/${h}/status/${id}`;
 }
 
-/** Confidence ceiling from AI-post volume only. */
-function confidenceCapFromAiPosts(aiPosts: number): number {
-  if (aiPosts < 3) return 0.25;
-  if (aiPosts <= 9) return 0.55;
-  if (aiPosts <= 19) return 0.75;
-  return 0.95;
-}
-
 export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
   const { handle, displayName, posts, meta } = input;
   const now = Date.now();
   const totalPosts = posts.length;
 
-  const emptyFields = {
-    totalPosts,
-    aiPosts: 0,
-    aiPct: 0,
-    postsAnalyzed: totalPosts,
-  };
-
   if (posts.length === 0) {
     return {
       handle,
       ...(displayName ? { displayName } : {}),
-      scores: { openAI: 34, anthropic: 33, neutral: 33 },
-      confidence: 0.05,
+      scores: { openAI: 50, anthropic: 50 },
       receipts: [
         {
           reason: "no_posts",
@@ -362,26 +342,20 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
       ],
       tags: [],
       vibeHeadline: "Schrodinger's shitposter",
-      ...emptyFields,
+      postsAnalyzed: totalPosts,
+      totalPosts,
       meta,
     };
   }
 
   let openAIPoints = 0;
   let anthropicPoints = 0;
-  let neutralPoints = 0;
   const receipts: ScoreReceipt[] = [];
   const tagSet = new Set<string>();
-
-  let aiPosts = 0;
-  /** Per-AI-post lean for headline: which lab got more raw points from that post. */
-  let leanOpenCount = 0;
-  let leanAnthCount = 0;
 
   const CROSS_WEIGHT = 0.6;
   const BASE_POS = 10;
   const BOOST_UNIT = 3;
-  const NEUTRAL_AI = 5;
   const ONLY_ONE_LAB_MULT = 1.35;
 
   for (const p of posts) {
@@ -391,8 +365,6 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
     if (!isAiRelevantTweet(textNorm)) {
       continue;
     }
-
-    aiPosts += 1;
 
     const openM = mentionsOpenAIDirect(textNorm);
     const anthM = mentionsAnthropicDirect(textNorm);
@@ -404,17 +376,13 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
 
     let dOpen = 0;
     let dAnth = 0;
-    let dNeut = 0;
 
     if (textNorm.includes("benchmark")) tagSet.add("benchmark glazing");
 
     const onlyOpen = openMFinal && !anthMFinal;
     const onlyAnth = anthMFinal && !openMFinal;
-    const bothLabs = openMFinal && anthMFinal;
 
-    if (!openMFinal && !anthMFinal) {
-      dNeut += NEUTRAL_AI * w;
-    } else {
+    if (openMFinal || anthMFinal) {
       const onlyOneLabStrong =
         (onlyOpen || onlyAnth) && hasHypeSignal(textNorm) && boostN > 0;
 
@@ -447,22 +415,10 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
           dAnth += w * BASE_POS * 0.85 * (onlyAnth ? 1.1 : 0.95);
         }
       }
-
-      if (bothLabs && !neg) {
-        dNeut += w * NEUTRAL_AI * 0.5;
-      }
-
-      const postOpen = Math.max(0, dOpen);
-      const postAnth = Math.max(0, dAnth);
-      const postNeut = Math.max(0, dNeut);
-      const eps = 0.01;
-      if (postOpen > postAnth + eps && postOpen > postNeut + eps) leanOpenCount += 1;
-      else if (postAnth > postOpen + eps && postAnth > postNeut + eps) leanAnthCount += 1;
     }
 
     openAIPoints += Math.max(0, dOpen);
     anthropicPoints += Math.max(0, dAnth);
-    neutralPoints += Math.max(0, dNeut);
 
     if (receipts.length < 25) {
       const bits: string[] = [];
@@ -484,73 +440,36 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
     }
   }
 
-  const aiPct =
-    totalPosts > 0 ? Math.round(((1000 * aiPosts) / totalPosts)) / 10 : 0;
-
   let o = openAIPoints;
   let a = anthropicPoints;
-  let n = neutralPoints;
-  const sum = o + a + n;
+  const sum = o + a;
 
-  if (aiPosts === 0 || sum < 1e-6) {
-    o = 34;
-    a = 33;
-    n = 33;
+  if (sum < 1e-6) {
+    o = 50;
+    a = 50;
   } else {
     o = (o / sum) * 100;
     a = (a / sum) * 100;
-    n = (n / sum) * 100;
   }
 
   const round2 = (x: number) => Math.round(x * 100) / 100;
   o = round2(o);
-  a = round2(a);
-  n = round2(100 - o - a);
-  n = round2(clamp(n, 0, 100));
-
-  const dominantDelta = Math.abs(o - a);
-
-  const shareOpen = aiPosts > 0 ? leanOpenCount / aiPosts : 0;
-  const shareAnth = aiPosts > 0 ? leanAnthCount / aiPosts : 0;
+  a = round2(100 - o); // ensures they always sum to exactly 100
 
   let vibeHeadline = "Chaos neutral reply guy";
 
-  if (aiPct < 5 && totalPosts >= 3) {
+  if (openAIPoints === 0 && anthropicPoints === 0) {
     vibeHeadline = "Terminally offline (AI-wise)";
-  } else if (aiPosts > 0) {
-    const highEngagement = aiPosts >= 10;
-    const balanced = dominantDelta < 12;
-
-    if (shareOpen > 0.6 && o > a) {
-      vibeHeadline = "Signed, sealed, Sam-pilled";
-    } else if (shareOpen >= 0.4 && shareOpen <= 0.6 && o >= a) {
-      vibeHeadline = "OpenAI-coded posting reflex";
-    } else if (shareAnth > 0.6 && a > o) {
-      vibeHeadline = "Constitutional AI enjoyer";
-    } else if (shareAnth >= 0.4 && shareAnth <= 0.6 && a >= o) {
-      vibeHeadline = "Anthropic-coded posting reflex";
-    } else if (highEngagement && balanced) {
-      vibeHeadline = "Both-sides AI maximalist";
-    } else if (aiPct >= 40 && balanced) {
-      vibeHeadline = "Chronically online, diplomatically neutral";
-    } else if (o > a + 8 && o > n) {
-      vibeHeadline = "Signed, sealed, Sam-pilled";
-    } else if (a > o + 8 && a > n) {
-      vibeHeadline = "Constitutional AI enjoyer";
-    }
+  } else {
+    const delta = o - a; // positive = OpenAI lean, negative = Anthropic lean
+    if (delta > 40) vibeHeadline = "Signed, sealed, Sam-pilled";
+    else if (delta > 20) vibeHeadline = "OpenAI-coded posting reflex";
+    else if (delta > 8) vibeHeadline = "Mild GPT energy";
+    else if (delta < -40) vibeHeadline = "Constitutional AI enjoyer";
+    else if (delta < -20) vibeHeadline = "Anthropic-coded posting reflex";
+    else if (delta < -8) vibeHeadline = "Subtle Claude bias";
+    else vibeHeadline = "Both-sides AI maximalist";
   }
-
-  const cap = confidenceCapFromAiPosts(aiPosts);
-  const evidenceStrength =
-    aiPosts > 0
-      ? posts
-          .filter((p) => isAiRelevantTweet(normalizeText(p.text)))
-          .reduce((acc, p) => acc + recencyWeight(p.createdAt, now), 0) / aiPosts
-      : 0;
-  const rawConf =
-    clamp(evidenceStrength, 0.15, 1) *
-    clamp(0.25 + dominantDelta / 120 + aiPosts * 0.035, 0, 1);
-  const confidence = round2(clamp(Math.min(rawConf, cap), 0.05, cap));
 
   const anthropicOnlyReceipts = receipts.filter(
     (r) =>
@@ -582,15 +501,12 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
   return {
     handle,
     ...(displayName ? { displayName } : {}),
-    scores: { openAI: o, anthropic: a, neutral: n },
-    confidence,
-    receipts: orderedReceipts.slice(0, 15),
+    scores: { openAI: o, anthropic: a },
+    receipts: orderedReceipts.slice(0, 5),
     tags: Array.from(tagSet).slice(0, 5),
     vibeHeadline,
     postsAnalyzed: totalPosts,
     totalPosts,
-    aiPosts,
-    aiPct,
     meta,
   };
 }

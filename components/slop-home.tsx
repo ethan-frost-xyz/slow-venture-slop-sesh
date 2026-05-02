@@ -19,8 +19,7 @@ function isSlopScoreResult(data: unknown): data is SlopScoreResult {
   const s = scores as Record<string, unknown>;
   return (
     typeof s.openAI === "number" &&
-    typeof s.anthropic === "number" &&
-    typeof s.neutral === "number"
+    typeof s.anthropic === "number"
   );
 }
 

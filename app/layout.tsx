@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Slop Sentiment Index",
   description:
-    "Review an X profile’s slop alignment score—OpenAI-coded vs Anthropic-coded vs neutral posting-style similarity. Parody, not employment or sponsorship.",
+    "Review an X profile’s slop alignment score—OpenAI-coded vs Anthropic-coded posting-style similarity. Parody, not employment or sponsorship.",
 };
 
 export default function RootLayout({

@@ -58,9 +58,8 @@ export function ResultCard({ result }: Props) {
         <p className="text-center text-sm font-semibold uppercase tracking-wider text-muted-foreground sm:text-base">
           Slop alignment score (breakdown)
         </p>
-        <div className="grid grid-cols-3 gap-3 text-center sm:gap-4">
+        <div className="grid grid-cols-2 gap-3 text-center sm:gap-4">
           <ScorePill label="Anthropic-coded" value={scores.anthropic} tone="anthropic" />
-          <ScorePill label="Neutral / indie" value={scores.neutral} tone="neutral" />
           <ScorePill label="OpenAI-coded" value={scores.openAI} tone="openai" />
         </div>
         {tags.length > 0 ? (
@@ -142,14 +141,12 @@ function ScorePill({
 }: {
   label: string;
   value: number;
-  tone: "openai" | "anthropic" | "neutral";
+  tone: "openai" | "anthropic";
 }) {
   const ring =
     tone === "openai"
       ? "ring-emerald-500/30"
-      : tone === "anthropic"
-        ? "ring-orange-500/35"
-        : "ring-foreground/10";
+      : "ring-orange-500/35";
   return (
     <div
       className={`rounded-xl bg-card/80 px-2 py-3 ring-1 ring-inset ${ring} sm:px-3`}
