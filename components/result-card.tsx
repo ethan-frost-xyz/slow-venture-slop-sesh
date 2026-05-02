@@ -166,7 +166,7 @@ export function ResultCard({ result }: Props) {
             <div className="flex flex-col items-center gap-2 pt-1">
               <Button
                 type="button"
-                className="min-w-[10rem] animate-in fade-in duration-300"
+                className="min-w-[10rem] animate-in fade-in duration-300 motion-safe:transition-[transform,box-shadow] motion-safe:duration-200 motion-safe:ease-out motion-safe:hover:-translate-y-0.5 motion-safe:hover:shadow-lg motion-safe:active:translate-y-px motion-safe:active:shadow-sm"
                 disabled={refereeLoading || refereeScores !== null}
                 aria-busy={refereeLoading}
                 onClick={runReferee}
