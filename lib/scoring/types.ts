@@ -1,9 +1,10 @@
 import type { Post, PostsFetchMeta } from "@/lib/providers/types";
 
-/** Raw OpenAI vs Anthropic point totals before normalization to a 0–100 pair summing to 100 */
+/** Raw weighted point totals before normalization to percentages summing to 100 */
 export type RawLabScores = {
   openAI: number;
   anthropic: number;
+  tossUp: number;
 };
 
 export type ScoreReceipt = {
@@ -29,6 +30,7 @@ export type SlopScoreResult = {
   scores: {
     openAI: number;
     anthropic: number;
+    tossUp: number;
   };
   receipts: ScoreReceipt[];
   tags: string[];
@@ -38,6 +40,8 @@ export type SlopScoreResult = {
   postsAnalyzed: number;
   /** Total tweets considered for scoring volume */
   totalPosts: number;
+  /** Share of fetched posts counted as AI-relevant (same denominator as totalPosts) */
+  aiRelevantPct: number;
   meta: PostsFetchMeta;
 };
 

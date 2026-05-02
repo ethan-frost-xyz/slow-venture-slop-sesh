@@ -17,9 +17,12 @@ function isSlopScoreResult(data: unknown): data is SlopScoreResult {
   const scores = (data as { scores?: unknown }).scores;
   if (typeof scores !== "object" || scores === null) return false;
   const s = scores as Record<string, unknown>;
+  const d = data as Record<string, unknown>;
   return (
     typeof s.openAI === "number" &&
-    typeof s.anthropic === "number"
+    typeof s.anthropic === "number" &&
+    typeof s.tossUp === "number" &&
+    typeof d.aiRelevantPct === "number"
   );
 }
 

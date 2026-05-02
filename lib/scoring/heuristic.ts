@@ -350,7 +350,7 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
     return {
       handle,
       ...(displayName ? { displayName } : {}),
-      scores: { openAI: 50, anthropic: 50 },
+      scores: { openAI: 33.33, anthropic: 33.33, tossUp: 33.34 },
       receipts: [
         {
           reason: "no_posts",
@@ -361,12 +361,15 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
       vibeHeadline: "Schrodinger's shitposter",
       postsAnalyzed: totalPosts,
       totalPosts,
+      aiRelevantPct: 0,
       meta,
     };
   }
 
   let openAIPoints = 0;
   let anthropicPoints = 0;
+  let tossUpPoints = 0;
+  let aiRelevantPostCount = 0;
   const receipts: ScoreReceipt[] = [];
   const tagSet = new Set<string>();
 
@@ -382,6 +385,8 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
     if (!isAiRelevantTweet(textNorm)) {
       continue;
     }
+
+    aiRelevantPostCount += 1;
 
     const flaggedOpenAIDirect = flaggedOpenAIDirectPhrases(textNorm);
     const flaggedAnthropicDirect = flaggedAnthropicDirectPhrases(textNorm);
@@ -436,8 +441,17 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
       }
     }
 
-    openAIPoints += Math.max(0, dOpen);
-    anthropicPoints += Math.max(0, dAnth);
+    const postOpen = Math.max(0, dOpen);
+    const postAnth = Math.max(0, dAnth);
+    const postMass = postOpen + postAnth;
+
+    if (openMFinal && anthMFinal) {
+      tossUpPoints += postMass;
+    } else if (openMFinal) {
+      openAIPoints += postMass;
+    } else if (anthMFinal) {
+      anthropicPoints += postMass;
+    }
 
     if (receipts.length < 25) {
       const bits: string[] = [];
@@ -471,28 +485,38 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
     }
   }
 
-  let o = openAIPoints;
-  let a = anthropicPoints;
-  const sum = o + a;
-
-  if (sum < 1e-6) {
-    o = 50;
-    a = 50;
-  } else {
-    o = (o / sum) * 100;
-    a = (a / sum) * 100;
-  }
+  const labSum = openAIPoints + anthropicPoints + tossUpPoints;
 
   const round2 = (x: number) => Math.round(x * 100) / 100;
-  o = round2(o);
-  a = round2(100 - o); // ensures they always sum to exactly 100
+
+  let o: number;
+  let a: number;
+  let t: number;
+
+  if (labSum < 1e-6) {
+    // No lab-flagged weighted mass (e.g. only general AI). Equal thirds so UI still parses.
+    o = 33.33;
+    a = 33.33;
+    t = 33.34;
+  } else {
+    o = round2((openAIPoints / labSum) * 100);
+    a = round2((anthropicPoints / labSum) * 100);
+    t = round2(100 - o - a);
+  }
+
+  const aiRelevantPct =
+    totalPosts > 0 ? Math.round((1000 * aiRelevantPostCount) / totalPosts) / 10 : 0;
 
   let vibeHeadline = "Chaos neutral reply guy";
 
-  if (openAIPoints === 0 && anthropicPoints === 0) {
+  if (aiRelevantPostCount === 0 && totalPosts >= 3) {
     vibeHeadline = "Terminally offline (AI-wise)";
+  } else if (labSum < 1e-6 && aiRelevantPostCount > 0) {
+    vibeHeadline = "AI timeline, no lab fingerprints";
+  } else if (t >= o && t >= a && t >= 38) {
+    vibeHeadline = "Both-sides AI maximalist";
   } else {
-    const delta = o - a; // positive = OpenAI lean, negative = Anthropic lean
+    const delta = o - a;
     if (delta > 40) vibeHeadline = "Signed, sealed, Sam-pilled";
     else if (delta > 20) vibeHeadline = "OpenAI-coded posting reflex";
     else if (delta > 8) vibeHeadline = "Mild GPT energy";
@@ -532,12 +556,13 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
   return {
     handle,
     ...(displayName ? { displayName } : {}),
-    scores: { openAI: o, anthropic: a },
+    scores: { openAI: o, anthropic: a, tossUp: t },
     receipts: orderedReceipts.slice(0, 20),
     tags: Array.from(tagSet).slice(0, 5),
     vibeHeadline,
     postsAnalyzed: totalPosts,
     totalPosts,
+    aiRelevantPct,
     meta,
   };
 }

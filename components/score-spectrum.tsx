@@ -3,27 +3,42 @@ import { cn } from "@/lib/utils";
 type Props = {
   openAI: number;
   anthropic: number;
+  tossUp: number;
   /** Shown under the bar; omit when the parent renders the same copy (e.g. CardDescription). */
   caption?: string;
   className?: string;
 };
 
-/** Profile slop alignment on the Anthropic-coded ← → OpenAI-coded axis */
-export function ScoreSpectrum({ openAI, anthropic, caption, className }: Props) {
-  const delta = openAI - anthropic;
-  const position = Math.min(100, Math.max(0, 50 + delta / 2));
-
+/** Anthrop ← toss-up strip → OpenAI; segment widths match normalized lab triple (sums to ~100%). */
+export function ScoreSpectrum({
+  openAI,
+  anthropic,
+  tossUp,
+  caption,
+  className,
+}: Props) {
   return (
     <div className={cn("space-y-2", className)}>
       <div className="flex justify-between text-[0.65rem] font-medium uppercase tracking-widest text-muted-foreground">
         <span>Anthropic-coded</span>
+        <span className="px-2">Toss-up</span>
         <span>OpenAI-coded</span>
       </div>
-      <div className="relative h-3 overflow-hidden rounded-full bg-muted ring-1 ring-border/60">
+      <div className="flex h-3 w-full overflow-hidden rounded-full ring-1 ring-border/60">
         <div
-          className="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background bg-foreground shadow-md"
-          style={{ left: `${position}%` }}
-          title="Slop alignment on this axis"
+          className="min-w-[2px] bg-orange-500/45 shadow-inner"
+          style={{ flex: `${anthropic} 1 0%` }}
+          title={`Anthropic-coded · ${anthropic.toFixed(1)}%`}
+        />
+        <div
+          className="min-w-[2px] border-x border-border/50 bg-muted/90"
+          style={{ flex: `${tossUp} 1 0%` }}
+          title={`Toss-up · ${tossUp.toFixed(1)}%`}
+        />
+        <div
+          className="min-w-[2px] bg-emerald-500/45 shadow-inner"
+          style={{ flex: `${openAI} 1 0%` }}
+          title={`OpenAI-coded · ${openAI.toFixed(1)}%`}
         />
       </div>
       {caption ? (

@@ -15,8 +15,17 @@ type Props = {
 };
 
 export function ResultCard({ result }: Props) {
-  const { scores, receipts, tags, vibeHeadline, meta, displayName, handle } =
-    result;
+  const {
+    scores,
+    receipts,
+    tags,
+    vibeHeadline,
+    meta,
+    displayName,
+    handle,
+    aiRelevantPct,
+    totalPosts,
+  } = result;
 
   const sourceLabel =
     meta.source === "live"
@@ -48,18 +57,27 @@ export function ResultCard({ result }: Props) {
               {vibeHeadline} · slop alignment (posting-style similarity only)
             </CardDescription>
           </div>
-          <Badge variant="secondary" className="shrink-0 font-mono text-xs">
-            {sourceLabel}
+          <Badge variant="secondary" className="flex max-w-[11rem] shrink-0 flex-col items-end gap-0.5 font-mono text-xs">
+            <span>{sourceLabel}</span>
+            <span className="text-[0.65rem] font-normal text-muted-foreground">
+              {aiRelevantPct.toFixed(1)}% AI-relevant · {totalPosts} posts
+            </span>
           </Badge>
         </div>
-        <ScoreSpectrum openAI={scores.openAI} anthropic={scores.anthropic} />
+        <ScoreSpectrum
+          openAI={scores.openAI}
+          anthropic={scores.anthropic}
+          tossUp={scores.tossUp}
+          caption="Lab split sums to 100% across posts that mention at least one lab (general AI chatter excluded)."
+        />
       </CardHeader>
       <CardContent className="space-y-5 pt-2">
         <p className="text-center text-sm font-semibold uppercase tracking-wider text-muted-foreground sm:text-base">
           Slop alignment score (breakdown)
         </p>
-        <div className="grid grid-cols-2 gap-3 text-center sm:gap-4">
+        <div className="grid grid-cols-3 gap-3 text-center sm:gap-4">
           <ScorePill label="Anthropic-coded" value={scores.anthropic} tone="anthropic" />
+          <ScorePill label="Toss-up" value={scores.tossUp} tone="tossUp" />
           <ScorePill label="OpenAI-coded" value={scores.openAI} tone="openai" />
         </div>
         {tags.length > 0 ? (
@@ -162,12 +180,14 @@ function ScorePill({
 }: {
   label: string;
   value: number;
-  tone: "openai" | "anthropic";
+  tone: "openai" | "anthropic" | "tossUp";
 }) {
   const ring =
     tone === "openai"
       ? "ring-emerald-500/30"
-      : "ring-orange-500/35";
+      : tone === "anthropic"
+        ? "ring-orange-500/35"
+        : "ring-foreground/12";
   return (
     <div
       className={`rounded-xl bg-card/80 px-2 py-3 ring-1 ring-inset ${ring} sm:px-3`}
