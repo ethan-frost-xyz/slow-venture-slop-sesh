@@ -37,10 +37,23 @@ If the live request fails or returns an empty timeline, the app falls back to **
 | `SLOP_TRY_LIVE_X` | `1` = try live fetch before fallback |
 | `SLOP_FORCE_MOCK` | `1` = never call live X |
 
+## Referee (OpenRouter)
+
+Optional LLM tie-breaker for **toss-up** mass. Set a server-side key (never commit real keys):
+
+| Variable | Purpose |
+|----------|---------|
+| `OPENROUTER_API_KEY` | [OpenRouter](https://openrouter.ai/) API key — required for **Run Referee** |
+| `OPENROUTER_REFEREE_MODEL` | Optional model id (default `openai/gpt-4o-mini`) |
+| `OPENROUTER_HTTP_REFERER` | Optional site URL for OpenRouter rankings |
+| `OPENROUTER_APP_TITLE` | Optional app title for OpenRouter rankings |
+
+Without `OPENROUTER_API_KEY`, the Referee button still appears when there is toss-up mass; the API returns **503** with a clear message.
+
 ## Architecture (where things live)
 
 - **UI:** `app/page.tsx`, `components/slop-home.tsx`, `components/result-card.tsx`
-- **API:** `app/api/score/route.ts`
+- **API:** `app/api/score/route.ts`, `app/api/referee/route.ts`
 - **Providers:** `lib/providers/*` (synthetic fallback + optional X), `lib/mock-data.ts`
 - **Scoring:** `lib/scoring/heuristic.ts` (deterministic receipts)
 

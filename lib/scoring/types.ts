@@ -25,6 +25,8 @@ export type ScoreReceipt = {
   negativeLabMention?: boolean;
   /** Lab-named post without strong negative; scoring credits the aligned lab(s) */
   positiveLabMention?: boolean;
+  /** Post contributed weighted mass to the toss-up bucket (both labs credited). */
+  isTossUpContributor?: boolean;
 };
 
 export type SlopScoreResult = {

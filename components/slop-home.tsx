@@ -31,6 +31,8 @@ export function SlopHome() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<SlopScoreResult | null>(null);
+  /** Bumps when a new score payload is applied so ResultCard remounts and clears Referee UI. */
+  const [resultGen, setResultGen] = useState(0);
   const [touched, setTouched] = useState(false);
 
   const runScore = useCallback(async (raw: string) => {
@@ -68,6 +70,7 @@ export function SlopHome() {
         return;
       }
       setResult(data);
+      setResultGen((n) => n + 1);
     } catch {
       setResult(null);
       setError("Network error. Check your connection and try again.");
@@ -117,7 +120,9 @@ export function SlopHome() {
           </div>
         ) : null}
 
-        {!loading && result ? <ResultCard result={result} /> : null}
+        {!loading && result ? (
+          <ResultCard key={resultGen} result={result} />
+        ) : null}
 
         {!loading &&
         !result &&

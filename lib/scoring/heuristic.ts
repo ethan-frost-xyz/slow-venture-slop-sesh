@@ -499,7 +499,8 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
 
     // Bucket by where points landed (negative cross-lab credits the other lab).
     const EPS = 1e-9;
-    if (postOpen > EPS && postAnth > EPS) {
+    const isTossUpContributor = postOpen > EPS && postAnth > EPS;
+    if (isTossUpContributor) {
       tossUpPoints += postMass;
     } else if (postOpen > EPS) {
       openAIPoints += postMass;
@@ -534,6 +535,7 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
         reason: bits.join(" · "),
         ...(flaggedOpenAI.length > 0 ? { flaggedOpenAI } : {}),
         ...(flaggedAnthropic.length > 0 ? { flaggedAnthropic } : {}),
+        ...(isTossUpContributor ? { isTossUpContributor: true } : {}),
         ...(neg && (openMFinal || anthMFinal)
           ? { negativeLabMention: true }
           : (openMFinal || anthMFinal) && !neg

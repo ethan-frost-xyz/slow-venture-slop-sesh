@@ -26,17 +26,17 @@ export function ScoreSpectrum({
       </div>
       <div className="flex h-3 w-full overflow-hidden rounded-full ring-1 ring-border/60">
         <div
-          className="min-w-[2px] bg-orange-500/45 shadow-inner"
+          className="min-w-[2px] bg-orange-500/45 shadow-inner transition-[flex] duration-500 ease-out"
           style={{ flex: `${anthropic} 1 0%` }}
           title={`Anthropic-coded · ${anthropic.toFixed(1)}%`}
         />
         <div
-          className="min-w-[2px] border-x border-border/50 bg-muted/90"
+          className="min-w-[2px] border-x border-border/50 bg-muted/90 transition-[flex] duration-500 ease-out"
           style={{ flex: `${tossUp} 1 0%` }}
           title={`Toss-up · ${tossUp.toFixed(1)}%`}
         />
         <div
-          className="min-w-[2px] bg-emerald-500/45 shadow-inner"
+          className="min-w-[2px] bg-emerald-500/45 shadow-inner transition-[flex] duration-500 ease-out"
           style={{ flex: `${openAI} 1 0%` }}
           title={`OpenAI-coded · ${openAI.toFixed(1)}%`}
         />
