@@ -111,6 +111,9 @@ function hasStrongNegative(textNorm: string): boolean {
     "rate limited",
     "overhyped",
     "lawsuit",
+    "issue",
+    "hallucinate",
+    "hallucination",
     "over-hyped",
     "fumbled",
     "not impressed",
@@ -509,7 +512,6 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
         bits.push("negative → cross-lab boost");
       if (boostN > 0) bits.push("booster phrasing");
       if (hasHypeSignal(textNorm) && !openM && !anthM) bits.push("hype only");
-      if (bits.length === 0) bits.push("general AI");
 
       const flaggedOpenAI = [
         ...flaggedOpenAIDirect,
@@ -519,6 +521,9 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
         ...flaggedAnthropicDirect,
         ...(anthropicVer ? ["Anthropic-style version cue in text"] : []),
       ];
+
+      // AI-relevant but no concrete receipt line (no lab/version/hype/booster/neg hooks).
+      if (bits.length === 0) continue;
 
       receipts.push({
         reason: bits.join(" · "),
