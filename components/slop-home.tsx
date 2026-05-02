@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { HandleForm } from "@/components/handle-form";
 import { ResultCard } from "@/components/result-card";
 import { StateMessage } from "@/components/state-message";
@@ -121,7 +122,20 @@ export function SlopHome() {
         ) : null}
 
         {!loading && result ? (
-          <ResultCard key={resultGen} result={result} />
+          <>
+            <div className="flex justify-center">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-auto min-h-0 py-1 text-xs text-muted-foreground hover:text-foreground"
+                onClick={() => setResultGen((n) => n + 1)}
+              >
+                Reset Grok demo (same scorecard, no refetch)
+              </Button>
+            </div>
+            <ResultCard key={resultGen} result={result} />
+          </>
         ) : null}
 
         {!loading &&
