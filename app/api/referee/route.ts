@@ -134,7 +134,7 @@ anthropicShareOfTossUp = fraction of the ${t.toFixed(1)}% toss-up that moves to 
           : {}),
         ...(process.env.OPENROUTER_APP_TITLE
           ? { "X-Title": process.env.OPENROUTER_APP_TITLE }
-          : { "X-Title": "Slop · Grok decide" }),
+          : { "X-Title": "Slop · Grok Cook" }),
       },
       body: JSON.stringify({
         model,

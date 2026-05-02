@@ -176,7 +176,7 @@ export function ResultCard({ result }: Props) {
       <CardContent className="space-y-5 pt-2">
         {refereeError ? (
           <Alert variant="destructive">
-            <AlertTitle>Grok could not decide</AlertTitle>
+            <AlertTitle>Grok could not cook</AlertTitle>
             <AlertDescription>{refereeError}</AlertDescription>
           </Alert>
         ) : null}
@@ -230,7 +230,7 @@ export function ResultCard({ result }: Props) {
                 {refereeLoading ? (
                   <>
                     <Loader2 className="size-4 animate-spin" aria-hidden />
-                    Grok is deciding…
+                    Grok is cooking…
                   </>
                 ) : (
                   "Let Grok Cook"

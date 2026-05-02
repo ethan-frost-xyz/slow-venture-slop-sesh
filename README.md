@@ -43,7 +43,7 @@ Optional LLM that resolves **toss-up** mass. The UI button is **Let Grok Cook** 
 
 | Variable | Purpose |
 |----------|---------|
-| `OPENROUTER_API_KEY` | [OpenRouter](https://openrouter.ai/) API key — required for **Let Grok decide** |
+| `OPENROUTER_API_KEY` | [OpenRouter](https://openrouter.ai/) API key — required for **Let Grok Cook** |
 | `OPENROUTER_REFEREE_MODEL` | Optional model id (default `x-ai/grok-4.1-fast`) |
 | `OPENROUTER_HTTP_REFERER` | Optional site URL for OpenRouter rankings |
 | `OPENROUTER_APP_TITLE` | Optional app title for OpenRouter rankings |
