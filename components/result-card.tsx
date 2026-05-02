@@ -15,8 +15,7 @@ type Props = {
 };
 
 export function ResultCard({ result }: Props) {
-  const { scores, confidence, receipts, tags, vibeHeadline, postsAnalyzed, meta } =
-    result;
+  const { scores, receipts, tags, vibeHeadline, meta } = result;
 
   const sourceLabel =
     meta.source === "live"
@@ -51,20 +50,6 @@ export function ResultCard({ result }: Props) {
           <ScorePill label="OpenAI-coded" value={scores.openAI} tone="openai" />
           <ScorePill label="Anthropic-coded" value={scores.anthropic} tone="anthropic" />
           <ScorePill label="Neutral / indie" value={scores.neutral} tone="neutral" />
-        </div>
-        <div className="rounded-lg border border-border/60 bg-muted/40 px-3 py-2 text-center">
-          <p className="text-[0.7rem] font-semibold uppercase tracking-wider text-muted-foreground">
-            Confidence
-          </p>
-          <p className="font-mono text-2xl font-semibold tabular-nums">
-            {(confidence * 100).toFixed(0)}
-            <span className="text-base font-normal text-muted-foreground">
-              /100
-            </span>
-          </p>
-          <p className="text-xs text-muted-foreground">
-            How loud & recent the style signals were ({postsAnalyzed} posts)
-          </p>
         </div>
         {tags.length > 0 ? (
           <div className="flex flex-wrap justify-center gap-2">
