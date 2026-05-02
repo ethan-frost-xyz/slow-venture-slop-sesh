@@ -84,8 +84,7 @@ export function SlopHome() {
             Slop Sentiment Score
           </h1>
           <p className="mx-auto mt-3 max-w-lg text-sm text-muted-foreground sm:text-base">
-            there was a bunch of slop here and idk what to put and ran out of
-            time but just know there was hella em dashes here before fr
+            Political compass for the timeline.
           </p>
         </div>
       </header>

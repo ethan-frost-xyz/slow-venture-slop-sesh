@@ -69,13 +69,13 @@ export function ResultCard({ result }: Props) {
             openAI={scores.openAI}
             anthropic={scores.anthropic}
             tossUp={scores.tossUp}
-            caption="Lab split sums to 100% across posts that mention at least one lab (general AI chatter excluded)."
+            caption="Lab split sums to 100% across posts that mention at least one lab. General AI chatter excluded."
           />
         </div>
       </CardHeader>
       <CardContent className="space-y-5 pt-2">
         <p className="text-center text-sm font-semibold uppercase tracking-wider text-muted-foreground sm:text-base">
-          Slop alignment score (breakdown)
+          Slop alignment score
         </p>
         <div className="grid grid-cols-3 gap-3 text-center sm:gap-4">
           <ScorePill label="Anthropic-coded" value={scores.anthropic} tone="anthropic" />
@@ -97,7 +97,7 @@ export function ResultCard({ result }: Props) {
         ) : null}
         <div>
           <p className="mb-2 text-center text-[0.7rem] font-semibold uppercase tracking-wider text-muted-foreground">
-            Receipts (why we think that)
+            Receipts
           </p>
           <ul className="space-y-2">
             {receipts.map((r, i) => (
@@ -130,7 +130,7 @@ export function ResultCard({ result }: Props) {
                     {(r.flaggedOpenAI?.length ?? 0) > 0 ? (
                       <p>
                         <span className="font-semibold text-emerald-600/90 dark:text-emerald-400/90">
-                          Flagged (OpenAI):
+                          OpenAI flags:
                         </span>{" "}
                         {r.flaggedOpenAI?.join(" · ") ?? ""}
                       </p>
@@ -138,7 +138,7 @@ export function ResultCard({ result }: Props) {
                     {(r.flaggedAnthropic?.length ?? 0) > 0 ? (
                       <p>
                         <span className="font-semibold text-orange-600/90 dark:text-orange-400/90">
-                          Flagged (Anthropic):
+                          Anthropic flags:
                         </span>{" "}
                         {r.flaggedAnthropic?.join(" · ") ?? ""}
                       </p>
@@ -163,13 +163,10 @@ export function ResultCard({ result }: Props) {
       </CardContent>
       <CardFooter className="flex flex-col gap-2 border-t border-border/60 text-center text-xs text-muted-foreground">
         <p>
-          Parody index. Not evidence of who pays them, who employs them, or who
-          they stan IRL—just how this profile&rsquo;s public posts rhyme with
-          &ldquo;lab launch thread&rdquo; culture.
+          <em>&ldquo;God is on the side of the heaviest cannon.&rdquo;</em>
+          <br />
+          Napoleon Bonaparte
         </p>
-        {meta.detail ? (
-          <p className="font-mono text-[0.65rem] opacity-80">{meta.detail}</p>
-        ) : null}
       </CardFooter>
     </Card>
   );

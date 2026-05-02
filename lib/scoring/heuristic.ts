@@ -513,11 +513,11 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
 
       const flaggedOpenAI = [
         ...flaggedOpenAIDirect,
-        ...(openaiVer ? ["(OpenAI-style version cue in text)"] : []),
+        ...(openaiVer ? ["OpenAI-style version cue in text"] : []),
       ];
       const flaggedAnthropic = [
         ...flaggedAnthropicDirect,
-        ...(anthropicVer ? ["(Anthropic-style version cue in text)"] : []),
+        ...(anthropicVer ? ["Anthropic-style version cue in text"] : []),
       ];
 
       receipts.push({
@@ -557,7 +557,7 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
   let vibeHeadline = "Chaos neutral reply guy";
 
   if (aiRelevantPostCount === 0 && totalPosts >= 3) {
-    vibeHeadline = "Terminally offline (AI-wise)";
+    vibeHeadline = "Terminally offline — AI-wise";
   } else if (labSum < 1e-6 && aiRelevantPostCount > 0) {
     vibeHeadline = "AI timeline, no lab fingerprints";
   } else if (t >= o && t >= a && t >= 38) {

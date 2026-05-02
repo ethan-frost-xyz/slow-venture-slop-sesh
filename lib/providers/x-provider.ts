@@ -17,7 +17,7 @@ export class XPostProvider implements PostProvider {
     if (!token) {
       return {
         ok: false,
-        error: "Live X ingest not configured (missing X_BEARER_TOKEN).",
+        error: "Live X ingest not configured — missing X_BEARER_TOKEN.",
       };
     }
 
@@ -32,7 +32,7 @@ export class XPostProvider implements PostProvider {
       if (!userRes.ok) {
         return {
           ok: false,
-          error: `X user lookup failed (${userRes.status}).`,
+          error: `X user lookup failed — HTTP ${userRes.status}.`,
         };
       }
       const userJson = (await userRes.json()) as {
@@ -59,7 +59,7 @@ export class XPostProvider implements PostProvider {
       if (!timelineRes.ok) {
         return {
           ok: false,
-          error: `X timeline fetch failed (${timelineRes.status}).`,
+          error: `X timeline fetch failed — HTTP ${timelineRes.status}.`,
         };
       }
       type TweetPayload = {
