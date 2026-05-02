@@ -121,7 +121,7 @@ function ScorePill({
     tone === "openai"
       ? "ring-emerald-500/30"
       : tone === "anthropic"
-        ? "ring-violet-500/30"
+        ? "ring-orange-500/35"
         : "ring-foreground/10";
   return (
     <div

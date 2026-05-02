@@ -19,7 +19,7 @@ export function ScoreSpectrum({ openAI, anthropic, className }: Props) {
       </div>
       <div className="relative h-3 overflow-hidden rounded-full bg-muted ring-1 ring-border/60">
         <div
-          className="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-violet-500/40 to-transparent"
+          className="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-orange-500/45 to-transparent"
           aria-hidden
         />
         <div

@@ -60,7 +60,7 @@ export function SlopHome() {
           </p>
           <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight sm:text-4xl">
             How{" "}
-            <span className="bg-gradient-to-r from-emerald-400 to-violet-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-emerald-600 to-orange-500 bg-clip-text text-transparent">
               lab-coded
             </span>{" "}
             is your timeline?
