@@ -429,8 +429,8 @@ export function vibeHeadlineFromLabPercents(o: number, a: number, t: number): st
   if (delta > b) return "Believes Codex is better but never tried CC";
   if (delta < -3 * b) return "Rate limit kink";
   if (delta < -2 * b) return "Started vibecoding in late 2025 early 2026";
-  if (delta < -b) return "Negative on Data Centers when at Bushwick houseparty";
-  return "Whatever model is cool or Bard user";
+  if (delta < -b) return "Negative on Data Centers when at Bushwick houseparties";
+  return "Reads code their own code";
 }
 
 export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
@@ -450,7 +450,7 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
         },
       ],
       tags: [],
-      vibeHeadline: "Schrodinger's shitposter",
+      vibeHeadline: "Touches grass or bard user",
       postsAnalyzed: totalPosts,
       totalPosts,
       aiRelevantPct: 0,
