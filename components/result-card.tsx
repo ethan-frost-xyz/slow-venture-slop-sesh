@@ -240,7 +240,7 @@ export function ResultCard({ result }: Props) {
             {grokRecap ? (
               <div className="w-full max-w-prose rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5 text-left">
                 <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-muted-foreground">
-                  Why the score shifted
+                  Ballistics report (why it shifted)
                 </p>
                 <p className="mt-1.5 text-sm leading-snug text-foreground">{grokRecap}</p>
               </div>

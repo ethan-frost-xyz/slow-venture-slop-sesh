@@ -115,7 +115,7 @@ Posts:
 ${lines.join("\n")}
 
 Reply with ONLY valid JSON, no other text:
-{"anthropicShareOfTossUp": <number 0-1>, "recap": "<required: 2-4 sentences. Explain WHY you moved the ${t.toFixed(1)}% toss-up the way you did—cite tone, which lab's vibe reads stronger, and how Open vs Anthropic scores shift. Plain language, no markdown>"}
+{"anthropicShareOfTossUp": <number 0-1>, "recap": "<required: 2-5 sentences. Unhinged, vivid, still truthful about the split: which lab's vibe won the toss-up and roughly how Open vs Anthropic scores move. You are weirdly invested in cannons (siege pieces, naval batteries, metaphorical broadsides of posting—commit). Plain language, no markdown>"}
 
 anthropicShareOfTossUp = fraction of the ${t.toFixed(1)}% toss-up that moves to Anthropic-coded; the rest goes to OpenAI-coded. New toss-up = 0.`;
 
@@ -138,14 +138,14 @@ anthropicShareOfTossUp = fraction of the ${t.toFixed(1)}% toss-up that moves to 
       },
       body: JSON.stringify({
         model,
-        temperature: 0.3,
+        temperature: 0.55,
         max_tokens: 4096,
         reasoning: { effort: "low" },
         messages: [
           {
             role: "system",
             content:
-              "You are Grok judging ambiguous X posts for OpenAI-coded vs Anthropic-coded vibe. Output only the JSON object requested; recap must justify the numeric split.",
+              "You are Grok judging ambiguous X posts for OpenAI-coded vs Anthropic-coded vibe. Output only the JSON object requested. The recap must justify anthropicShareOfTossUp with deranged energy: dramatic metaphors, feigned or real obsession with cannons (historical artillery, ship-of-the-line broadsides, or bringing the big guns of lab posting), and a clear read on which lab's aesthetic carried the toss-up—only cite what is plausible from the posts you were given.",
           },
           { role: "user", content: userPrompt },
         ],
@@ -212,7 +212,7 @@ anthropicShareOfTossUp = fraction of the ${t.toFixed(1)}% toss-up that moves to 
       ? recapRaw.trim().slice(0, 800)
       : "";
   if (!recap) {
-    recap = `Grok assigned about ${(share * 100).toFixed(0)}% of the ${t.toFixed(1)}% toss-up to Anthropic-coded and ${((1 - share) * 100).toFixed(0)}% to OpenAI-coded (${o.toFixed(1)}% → ${newOpen.toFixed(1)}% Open, ${a.toFixed(1)}% → ${newAnth.toFixed(1)}% Anthropic), based on the mixed-signal posts above.`;
+    recap = `Grok traversed the parapet, squinted through the embrasure, and still refuses to write a normal sentence—so here are numbers instead: about ${(share * 100).toFixed(0)}% of the ${t.toFixed(1)}% toss-up went Anthropic-coded, ${((1 - share) * 100).toFixed(0)}% OpenAI-coded (${o.toFixed(1)}% → ${newOpen.toFixed(1)}% Open, ${a.toFixed(1)}% → ${newAnth.toFixed(1)}% Anthropic). The 32-pounder of vibes has spoken; the mixed-signal posts are the powder charge.`;
   }
 
   return NextResponse.json({
