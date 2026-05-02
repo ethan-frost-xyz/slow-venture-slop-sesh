@@ -1,12 +1,14 @@
+import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 type Props = {
   title: string;
   description?: string;
   className?: string;
+  children?: ReactNode;
 };
 
-export function StateMessage({ title, description, className }: Props) {
+export function StateMessage({ title, description, className, children }: Props) {
   return (
     <div
       className={cn(
@@ -18,6 +20,7 @@ export function StateMessage({ title, description, className }: Props) {
       {description ? (
         <p className="mt-2 text-sm text-muted-foreground">{description}</p>
       ) : null}
+      {children}
     </div>
   );
 }

@@ -19,12 +19,7 @@ export function ScoreSpectrum({
 }: Props) {
   return (
     <div className={cn("space-y-2", className)}>
-      <div className="flex justify-between text-[0.65rem] font-medium uppercase tracking-widest text-muted-foreground">
-        <span>Anthropic-coded</span>
-        <span className="px-2 text-primary">Toss-up</span>
-        <span>OpenAI-coded</span>
-      </div>
-      <div className="flex h-3 w-full overflow-hidden rounded-full ring-1 ring-border/60">
+      <div className="flex h-4 w-full overflow-hidden rounded-full ring-1 ring-border/60 sm:h-5">
         <div
           className="min-w-[2px] bg-orange-500/45 shadow-inner transition-[flex] duration-500 ease-out"
           style={{ flex: `${anthropic} 1 0%` }}
@@ -41,8 +36,28 @@ export function ScoreSpectrum({
           title={`OpenAI-coded · ${openAI.toFixed(1)}%`}
         />
       </div>
+      <p
+        className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center font-mono text-sm leading-snug tracking-tight sm:text-base"
+        aria-label={`Anthropic ${anthropic.toFixed(1)} percent, toss-up ${tossUp.toFixed(1)} percent, OpenAI ${openAI.toFixed(1)} percent`}
+      >
+        <span className="whitespace-nowrap font-bold text-foreground/90">
+          Anthropic <span className="tabular-nums">{anthropic.toFixed(0)}%</span>
+        </span>
+        <span className="mx-2 font-normal text-border" aria-hidden>
+          ·
+        </span>
+        <span className="whitespace-nowrap font-bold text-foreground/90">
+          Toss-up <span className="tabular-nums">{tossUp.toFixed(0)}%</span>
+        </span>
+        <span className="mx-2 font-normal text-border" aria-hidden>
+          ·
+        </span>
+        <span className="whitespace-nowrap font-bold text-foreground/90">
+          OpenAI <span className="tabular-nums">{openAI.toFixed(0)}%</span>
+        </span>
+      </p>
       {caption ? (
-        <p className="text-center text-xs text-muted-foreground">{caption}</p>
+        <p className="text-center text-sm text-muted-foreground sm:text-base">{caption}</p>
       ) : null}
     </div>
   );

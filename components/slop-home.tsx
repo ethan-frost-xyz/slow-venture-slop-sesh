@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { HandleForm } from "@/components/handle-form";
 import { ResultCard } from "@/components/result-card";
 import { StateMessage } from "@/components/state-message";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getRecentHandles, recordReviewedHandle } from "@/lib/recent-handles";
 import { normalizeHandle } from "@/lib/providers/types";
 import type { SlopScoreResult } from "@/lib/scoring/types";
 
@@ -35,6 +36,11 @@ export function SlopHome() {
   /** Bumps at the start of every score run so ResultCard remounts cleanly. */
   const [resultGen, setResultGen] = useState(0);
   const [touched, setTouched] = useState(false);
+  const [recentHandles, setRecentHandles] = useState<string[]>([]);
+
+  useEffect(() => {
+    setRecentHandles(getRecentHandles());
+  }, []);
 
   const runScore = useCallback(async (raw: string) => {
     const h = normalizeHandle(raw);
@@ -72,6 +78,8 @@ export function SlopHome() {
         return;
       }
       setResult(data);
+      recordReviewedHandle(h);
+      setRecentHandles(getRecentHandles());
     } catch {
       setResult(null);
       setError("Network error. Check your connection and try again.");
@@ -87,7 +95,7 @@ export function SlopHome() {
           <h1 className="font-heading text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
             <span className="text-primary">Slop</span> Sentiment Score
           </h1>
-          <p className="mx-auto mt-3 max-w-lg text-sm text-muted-foreground sm:text-base">
+          <p className="mx-auto mt-3 max-w-lg text-base text-muted-foreground sm:text-lg">
             Political compass for the <span className="text-primary">timeline</span>.
           </p>
         </div>
@@ -129,12 +137,36 @@ export function SlopHome() {
         !touched ? (
           <StateMessage
             title="Pick a profile"
-            description="Enter a handle above."
-          />
+            description="Enter a handle above, or open a profile you viewed recently."
+          >
+            {recentHandles.length > 0 ? (
+              <div className="mt-6">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground sm:text-sm">
+                  Recent (about 20 min)
+                </p>
+                <ul className="mt-3 flex flex-wrap justify-center gap-2">
+                  {recentHandles.map((h) => (
+                    <li key={h}>
+                      <button
+                        type="button"
+                        className="rounded-full border border-border/80 bg-background/80 px-3 py-2 font-mono text-base text-foreground transition-colors hover:border-primary/60 hover:bg-muted/50"
+                        onClick={() => {
+                          setHandle(h);
+                          void runScore(h);
+                        }}
+                      >
+                        @{h}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </StateMessage>
         ) : null}
       </main>
 
-      <footer className="mt-auto border-t border-border/50 px-4 py-4 text-center text-[0.7rem] text-muted-foreground">
+      <footer className="mt-auto border-t border-border/50 px-4 py-4 text-center text-xs text-muted-foreground sm:text-sm">
         Ethan Frost 2026
       </footer>
     </div>

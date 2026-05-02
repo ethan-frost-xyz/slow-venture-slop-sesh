@@ -442,6 +442,54 @@ export function vibeHeadlineFromLabPercents(o: number, a: number, t: number): st
   return "Reads code their own code";
 }
 
+/** How tied “top bucket” scores resolve when multiple hit the same max. */
+const OVERALL_HERO_BUCKET_ORDER = ["openai", "anthropic", "tossup"] as const;
+
+export type OverallSlopHero =
+  | {
+      kind: "single";
+      pct: number;
+      /** Phrase after “of …” in the hero, e.g. OpenAI-coded lab mass */
+      ofLabel: string;
+    }
+  | {
+      kind: "dualOpenAnth";
+      openAI: number;
+      anthropic: number;
+    };
+
+/**
+ * One prominent headline score from the lab triple: “X% of …” (or an even Open vs Anth split).
+ * Toss-up never wins a tie over a lab bucket; dual only when OpenAI and Anthropic co-dominate.
+ */
+export function overallSlopHero(o: number, a: number, t: number): OverallSlopHero {
+  const eps = 0.05;
+  const maxV = Math.max(o, a, t);
+  const near = (x: number) => Math.abs(x - maxV) <= eps;
+  const tops = OVERALL_HERO_BUCKET_ORDER.filter((key) =>
+    near(key === "openai" ? o : key === "anthropic" ? a : t),
+  );
+  const openAt = tops.includes("openai");
+  const anthAt = tops.includes("anthropic");
+
+  if (openAt && anthAt && !tops.includes("tossup") && Math.abs(o - a) <= eps) {
+    return { kind: "dualOpenAnth", openAI: o, anthropic: a };
+  }
+
+  const pick =
+    tops.find((k) => k !== "tossup") ??
+    tops.find((k) => k === "tossup") ??
+    "openai";
+  const pct = pick === "openai" ? o : pick === "anthropic" ? a : t;
+  const ofLabel =
+    pick === "openai"
+      ? "OpenAI-coded model mass"
+      : pick === "anthropic"
+        ? "Anthropic-coded model mass"
+        : "mixed-lab toss-up mass";
+  return { kind: "single", pct, ofLabel };
+}
+
 export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
   const { handle, displayName, posts, meta } = input;
   const now = Date.now();

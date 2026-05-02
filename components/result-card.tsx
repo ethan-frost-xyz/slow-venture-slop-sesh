@@ -10,12 +10,15 @@ import {
   CardContent,
   CardDescription,
   CardFooter,
-  CardAction,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { ScoreSpectrum } from "@/components/score-spectrum";
-import { vibeHeadlineFromLabPercents } from "@/lib/scoring/heuristic";
+import {
+  overallSlopHero,
+  type OverallSlopHero,
+  vibeHeadlineFromLabPercents,
+} from "@/lib/scoring/heuristic";
 import type { SlopScoreResult } from "@/lib/scoring/types";
 
 type Props = {
@@ -79,6 +82,12 @@ export function ResultCard({ result }: Props) {
     scores.tossUp > 0 && receipts.some((r) => r.isTossUpContributor === true);
   const displayScores = refereeScores ?? scores;
 
+  const displayHero = overallSlopHero(
+    displayScores.openAI,
+    displayScores.anthropic,
+    displayScores.tossUp,
+  );
+
   async function letGrokDecide() {
     setRefereeError(null);
     setRefereeLoading(true);
@@ -113,49 +122,51 @@ export function ResultCard({ result }: Props) {
   }
 
   return (
-    <Card className="border-border/80 shadow-lg shadow-black/20 ring-2 ring-foreground/5">
-      <CardHeader className="border-b border-border/60 pb-4">
-        <CardTitle className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-lg sm:text-xl">
-          {displayName ? (
-            <>
-              <span>{displayName}</span>
-              <span className="font-normal text-muted-foreground">@{handle}</span>
-            </>
-          ) : (
-            <span>@{handle}</span>
-          )}
-        </CardTitle>
-        <CardDescription className="mt-1 max-w-prose text-pretty text-primary">
-          {displayHeadline}
-        </CardDescription>
-        <CardAction className="justify-self-end">
-          <Badge
-            variant="secondary"
-            className="h-auto min-h-0 shrink-0 flex-col items-end justify-center gap-0.5 overflow-visible py-1.5 text-right align-top font-mono text-xs leading-tight whitespace-normal"
-          >
-            <span className="whitespace-nowrap">{sourceLabel}</span>
-            <span className="text-[0.65rem] font-normal leading-snug whitespace-nowrap text-muted-foreground">
-              {aiRelevantPct.toFixed(1)}% AI-relevant · {totalPosts} posts
-            </span>
-          </Badge>
-        </CardAction>
-        <div className="col-span-2 mt-3 flex w-full flex-col gap-3">
+    <Card className="relative border-border/80 shadow-lg shadow-black/20 ring-2 ring-foreground/5">
+      <Badge
+        variant="secondary"
+        className="absolute top-4 right-4 z-10 h-auto min-h-0 max-w-[calc(100%-2rem)] flex-col items-end justify-center gap-1 py-2 text-right font-mono text-sm font-medium leading-tight whitespace-normal sm:max-w-[min(100%-2rem,12rem)]"
+      >
+        <span className="whitespace-nowrap">{sourceLabel}</span>
+        <span className="text-xs font-normal leading-snug whitespace-nowrap text-muted-foreground">
+          {aiRelevantPct.toFixed(1)}% AI-relevant · {totalPosts} posts
+        </span>
+      </Badge>
+      <CardHeader className="flex flex-col gap-3 border-b border-border/60 pb-4 pt-1 sm:gap-4">
+        <div className="min-w-0 pr-36 sm:pr-44">
+          <CardTitle className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-xl font-semibold tracking-tight sm:text-2xl">
+            {displayName ? (
+              <>
+                <span>{displayName}</span>
+                <span className="font-normal text-muted-foreground">@{handle}</span>
+              </>
+            ) : (
+              <span>@{handle}</span>
+            )}
+          </CardTitle>
+        </div>
+        <div className="w-full space-y-3 text-center sm:space-y-4">
+          <p className="text-xl font-bold uppercase tracking-wide text-primary sm:text-2xl">
+            Slop alignment score
+          </p>
+          <OverallScoreHero hero={displayHero} />
+        </div>
+        <div className="flex w-full flex-col gap-3">
           {refereeScores ? (
             <div className="rounded-lg bg-muted/30 px-2 py-2 opacity-80 ring-1 ring-border/40">
-              <p className="mb-1 text-center text-[0.65rem] font-semibold uppercase tracking-wider text-muted-foreground">
+              <p className="mb-2 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground sm:text-sm">
                 Before · heuristic
               </p>
               <ScoreSpectrum
                 openAI={scores.openAI}
                 anthropic={scores.anthropic}
                 tossUp={scores.tossUp}
-                caption={undefined}
               />
             </div>
           ) : null}
           <div className={refereeScores ? "animate-in fade-in duration-500" : ""}>
             {refereeScores ? (
-              <p className="mb-1 text-center text-[0.65rem] font-semibold uppercase tracking-wider text-primary">
+              <p className="mb-2 text-center text-xs font-semibold uppercase tracking-wider text-primary sm:text-sm">
                 After · Grok
               </p>
             ) : null}
@@ -163,10 +174,12 @@ export function ResultCard({ result }: Props) {
               openAI={displayScores.openAI}
               anthropic={displayScores.anthropic}
               tossUp={displayScores.tossUp}
-              caption="Lab split sums to 100% across posts that mention at least one lab. General AI chatter excluded."
             />
           </div>
         </div>
+        <CardDescription className="mx-auto w-full max-w-prose text-pretty text-center text-lg font-medium italic leading-snug text-foreground/90 sm:text-xl">
+          {displayHeadline}
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5 pt-2">
         {refereeError ? (
@@ -175,49 +188,13 @@ export function ResultCard({ result }: Props) {
             <AlertDescription>{refereeError}</AlertDescription>
           </Alert>
         ) : null}
-        <p className="text-center text-sm font-semibold uppercase tracking-wider text-primary sm:text-base">
-          Slop alignment score
-        </p>
-        {refereeScores ? (
-          <div className="space-y-4">
-            <div className="rounded-lg bg-muted/30 px-2 py-3 opacity-80 ring-1 ring-border/40">
-              <p className="mb-2 text-center text-[0.65rem] font-semibold uppercase tracking-wider text-muted-foreground">
-                Before · heuristic
-              </p>
-              <div className="grid grid-cols-3 gap-3 text-center sm:gap-4">
-                <ScorePill label="Anthropic-coded" value={scores.anthropic} tone="anthropic" />
-                <ScorePill label="Toss-up" value={scores.tossUp} tone="tossUp" />
-                <ScorePill label="OpenAI-coded" value={scores.openAI} tone="openai" />
-              </div>
-            </div>
-            <div className="animate-in fade-in duration-500">
-              <p className="mb-2 text-center text-[0.65rem] font-semibold uppercase tracking-wider text-primary">
-                After · Grok
-              </p>
-              <div className="grid grid-cols-3 gap-3 text-center sm:gap-4">
-                <ScorePill
-                  label="Anthropic-coded"
-                  value={refereeScores.anthropic}
-                  tone="anthropic"
-                />
-                <ScorePill label="Toss-up" value={refereeScores.tossUp} tone="tossUp" />
-                <ScorePill label="OpenAI-coded" value={refereeScores.openAI} tone="openai" />
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-3 gap-3 text-center sm:gap-4">
-            <ScorePill label="Anthropic-coded" value={scores.anthropic} tone="anthropic" />
-            <ScorePill label="Toss-up" value={scores.tossUp} tone="tossUp" />
-            <ScorePill label="OpenAI-coded" value={scores.openAI} tone="openai" />
-          </div>
-        )}
         {showRefereeButton ? (
           <div className="flex flex-col items-center gap-2 border-t border-border/50 pt-4">
             {!refereeScores ? (
               <Button
                 type="button"
-                className="min-w-[12rem] animate-in fade-in duration-300 motion-safe:transition-[transform,box-shadow] motion-safe:duration-200 motion-safe:ease-out motion-safe:hover:-translate-y-0.5 motion-safe:hover:shadow-lg motion-safe:active:translate-y-px motion-safe:active:shadow-sm gap-2"
+                size="lg"
+                className="min-w-[12rem] animate-in fade-in duration-300 text-base motion-safe:transition-[transform,box-shadow] motion-safe:duration-200 motion-safe:ease-out motion-safe:hover:-translate-y-0.5 motion-safe:hover:shadow-lg motion-safe:active:translate-y-px motion-safe:active:shadow-sm gap-2"
                 disabled={refereeLoading}
                 aria-busy={refereeLoading}
                 onClick={letGrokDecide}
@@ -240,7 +217,7 @@ export function ResultCard({ result }: Props) {
               <Badge
                 key={t}
                 variant="outline"
-                className="text-xs font-normal underline-offset-2"
+                className="text-sm font-normal underline-offset-2"
               >
                 {t}
               </Badge>
@@ -248,14 +225,14 @@ export function ResultCard({ result }: Props) {
           </div>
         ) : null}
         <div>
-          <p className="mb-2 text-center text-[0.65rem] font-semibold uppercase tracking-wider text-primary">
+          <p className="mb-3 text-center text-xs font-semibold uppercase tracking-wider text-primary sm:text-sm">
             Receipts
           </p>
           <ul className="space-y-2">
             {receipts.map((r, i) => (
               <li
                 key={`${r.postUrl ?? r.text}-${i}`}
-                className={`rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-sm leading-snug ${
+                className={`rounded-lg border border-border/50 bg-background/50 px-3 py-3 text-base leading-snug ${
                   r.isTossUpContributor ? "ring-1 ring-amber-500/25" : ""
                 }`}
               >
@@ -263,7 +240,7 @@ export function ResultCard({ result }: Props) {
                   {r.isTossUpContributor ? (
                     <Badge
                       variant="outline"
-                      className="shrink-0 border-amber-500/50 bg-amber-500/5 text-[0.65rem] font-medium text-amber-950 dark:text-amber-100"
+                      className="shrink-0 border-amber-500/50 bg-amber-500/5 text-xs font-medium text-amber-950 dark:text-amber-100"
                     >
                       Toss-up post
                     </Badge>
@@ -271,27 +248,27 @@ export function ResultCard({ result }: Props) {
                   {r.negativeLabMention ? (
                     <Badge
                       variant="outline"
-                      className="shrink-0 border-amber-500/40 bg-amber-500/10 text-[0.65rem] font-medium text-amber-950 dark:text-amber-100"
+                      className="shrink-0 border-amber-500/40 bg-amber-500/10 text-xs font-medium text-amber-950 dark:text-amber-100"
                     >
                       Negative
                     </Badge>
                   ) : r.positiveLabMention ? (
                     <Badge
                       variant="outline"
-                      className="shrink-0 border-emerald-500/40 bg-emerald-500/10 text-[0.65rem] font-medium text-emerald-950 dark:text-emerald-100"
+                      className="shrink-0 border-emerald-500/40 bg-emerald-500/10 text-xs font-medium text-emerald-950 dark:text-emerald-100"
                     >
                       Positive
                     </Badge>
                   ) : null}
-                  <span className="text-xs text-muted-foreground">{r.reason}</span>
+                  <span className="text-sm text-muted-foreground">{r.reason}</span>
                   {typeof r.likeCount === "number" ? (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-sm text-muted-foreground">
                       · {r.likeCount.toLocaleString()} likes
                     </span>
                   ) : null}
                   {r.createdAt ? (
                     <time
-                      className="text-[0.65rem] font-mono text-muted-foreground"
+                      className="text-xs font-mono text-muted-foreground sm:text-sm"
                       dateTime={r.createdAt}
                     >
                       {new Date(r.createdAt).toLocaleString(undefined, {
@@ -303,7 +280,7 @@ export function ResultCard({ result }: Props) {
                 </div>
                 {(r.flaggedOpenAI?.length ?? 0) > 0 ||
                 (r.flaggedAnthropic?.length ?? 0) > 0 ? (
-                  <div className="mt-1 space-y-0.5 text-[0.65rem] leading-tight text-muted-foreground">
+                  <div className="mt-1 space-y-0.5 text-sm leading-snug text-muted-foreground">
                     {(r.flaggedOpenAI?.length ?? 0) > 0 ? (
                       <p>
                         <span className="font-semibold text-emerald-600/90 dark:text-emerald-400/90">
@@ -328,7 +305,7 @@ export function ResultCard({ result }: Props) {
                     href={r.postUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-2 inline-block text-sm font-medium text-primary underline-offset-2 hover:underline"
+                    className="mt-2 inline-block text-base font-medium text-primary underline-offset-2 hover:underline"
                   >
                     View
                   </a>
@@ -338,7 +315,7 @@ export function ResultCard({ result }: Props) {
           </ul>
         </div>
       </CardContent>
-      <CardFooter className="flex flex-col gap-2 border-t border-border/60 text-center text-xs text-muted-foreground">
+      <CardFooter className="flex flex-col gap-2 border-t border-border/60 text-center text-sm text-muted-foreground sm:text-base">
         <p>
           <em className="text-primary">
             &ldquo;God is on the side of the heaviest cannon.&rdquo;
@@ -351,30 +328,33 @@ export function ResultCard({ result }: Props) {
   );
 }
 
-function ScorePill({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: number;
-  tone: "openai" | "anthropic" | "tossUp";
-}) {
-  const ring =
-    tone === "openai"
-      ? "ring-emerald-500/30"
-      : tone === "anthropic"
-        ? "ring-orange-500/35"
-        : "ring-foreground/12";
+function OverallScoreHero({ hero }: { hero: OverallSlopHero }) {
+  if (hero.kind === "dualOpenAnth") {
+    return (
+      <div className="space-y-2">
+        <p className="font-mono text-4xl font-bold tracking-tight tabular-nums sm:text-5xl">
+          <span className="text-emerald-600 dark:text-emerald-400/95">
+            {hero.openAI.toFixed(1)}%
+          </span>
+          <span className="mx-2 font-normal text-muted-foreground">·</span>
+          <span className="text-orange-600 dark:text-orange-400/95">
+            {hero.anthropic.toFixed(1)}%
+          </span>
+        </p>
+        <p className="text-base text-muted-foreground sm:text-lg">
+          Even OpenAI- vs Anthropic-coded lab mass
+        </p>
+      </div>
+    );
+  }
   return (
-    <div
-      className={`rounded-xl bg-card/80 px-2 py-3 ring-1 ring-inset transition-colors duration-500 ${ring} sm:px-3`}
-    >
-      <p className="text-[0.65rem] font-medium uppercase leading-tight tracking-wide text-muted-foreground">
-        {label}
+    <div className="space-y-2">
+      <p className="font-mono text-5xl font-bold tracking-tight tabular-nums text-foreground sm:text-6xl">
+        {hero.pct.toFixed(1)}
+        <span className="text-3xl font-semibold text-primary sm:text-4xl">%</span>
       </p>
-      <p className="mt-1 font-mono text-xl font-semibold tabular-nums transition-all duration-500 sm:text-2xl">
-        {value.toFixed(1)}
+      <p className="text-base text-muted-foreground sm:text-lg">
+        of {hero.ofLabel}
       </p>
     </div>
   );

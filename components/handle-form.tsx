@@ -19,7 +19,7 @@ export function HandleForm({ value, onChange, onSubmit, disabled }: Props) {
       }}
     >
       <div className="relative flex-1">
-        <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-sm font-medium text-primary">
+        <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-base font-medium text-primary">
           @
         </span>
         <Input
@@ -36,11 +36,11 @@ export function HandleForm({ value, onChange, onSubmit, disabled }: Props) {
           autoComplete="off"
           spellCheck={false}
           disabled={disabled}
-          className="pl-7 font-mono"
+          className="h-11 pl-8 font-mono text-base"
           aria-label="X username"
         />
       </div>
-      <Button type="submit" disabled={disabled} className="shrink-0 sm:h-8">
+      <Button type="submit" disabled={disabled} size="lg" className="shrink-0 text-base sm:h-11">
         Score profile
       </Button>
     </form>
