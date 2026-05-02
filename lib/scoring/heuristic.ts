@@ -179,17 +179,7 @@ const OPENAI_DIRECT_TERMS = [
   "gpt-5.4-mini",
   "gpt-5-mini",
   "o1",
-  "o3",
-  "o4",
   "o1-pro",
-  "o3-mini",
-  "o4-mini",
-  "o3 mini",
-  "o4 mini",
-  "o3-deep-research",
-  "o4-mini-deep-research",
-  "o3 deep research",
-  "o4-mini deep research",
   "sora",
   "sora-2",
   "sora-3",
@@ -294,8 +284,6 @@ function flaggedOpenAIDirectPhrases(textNorm: string): string[] {
   const found = new Set(labTermMatches(textNorm, OPENAI_DIRECT_TERMS));
   if (/\bgpt\b/.test(textNorm)) found.add("gpt");
   if (/\bo1\b/.test(textNorm)) found.add("o1");
-  if (/\bo3\b/.test(textNorm)) found.add("o3");
-  if (/\bo4\b/.test(textNorm)) found.add("o4");
   return [...found].sort((a, b) => b.length - a.length || a.localeCompare(b));
 }
 

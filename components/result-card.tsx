@@ -24,22 +24,19 @@ type Props = {
 
 type LabScores = SlopScoreResult["scores"];
 
-type GrokDecideResponse = {
+type RefereeScoresResponse = {
   scores: LabScores;
-  recap: string;
 };
 
-function isGrokDecideResponse(data: unknown): data is GrokDecideResponse {
+function isRefereeScoresResponse(data: unknown): data is RefereeScoresResponse {
   if (typeof data !== "object" || data === null || "error" in data) return false;
   const scores = (data as { scores?: unknown }).scores;
   if (typeof scores !== "object" || scores === null) return false;
   const s = scores as Record<string, unknown>;
-  const recap = (data as { recap?: unknown }).recap;
   return (
     typeof s.openAI === "number" &&
     typeof s.anthropic === "number" &&
-    typeof s.tossUp === "number" &&
-    typeof recap === "string"
+    typeof s.tossUp === "number"
   );
 }
 
@@ -57,7 +54,6 @@ export function ResultCard({ result }: Props) {
   } = result;
 
   const [refereeScores, setRefereeScores] = useState<LabScores | null>(null);
-  const [grokRecap, setGrokRecap] = useState<string | null>(null);
   const [refereeError, setRefereeError] = useState<string | null>(null);
   const [refereeLoading, setRefereeLoading] = useState(false);
 
@@ -104,12 +100,11 @@ export function ResultCard({ result }: Props) {
         setRefereeError(msg);
         return;
       }
-      if (!isGrokDecideResponse(data)) {
-        setRefereeError("Unexpected response from Grok.");
+      if (!isRefereeScoresResponse(data)) {
+        setRefereeError("Unexpected response from referee.");
         return;
       }
       setRefereeScores(data.scores);
-      setGrokRecap(data.recap.trim());
     } catch {
       setRefereeError("Network error. Try again.");
     } finally {
@@ -236,14 +231,6 @@ export function ResultCard({ result }: Props) {
                   "Let Grok Cook"
                 )}
               </Button>
-            ) : null}
-            {grokRecap ? (
-              <div className="w-full max-w-prose rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5 text-left">
-                <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-primary">
-                  Ballistics report (why it shifted)
-                </p>
-                <p className="mt-1.5 text-sm leading-snug text-foreground">{grokRecap}</p>
-              </div>
             ) : null}
           </div>
         ) : null}

@@ -32,7 +32,7 @@ export function SlopHome() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<SlopScoreResult | null>(null);
-  /** Bumps at the start of every score run so ResultCard remounts with a clean Grok UI. */
+  /** Bumps at the start of every score run so ResultCard remounts cleanly. */
   const [resultGen, setResultGen] = useState(0);
   const [touched, setTouched] = useState(false);
 

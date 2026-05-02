@@ -215,8 +215,15 @@ anthropicShareOfTossUp = fraction of the ${t.toFixed(1)}% toss-up that moves to 
     recap = `Grok stared into the timeline trough and licked the spoon anyway—no recap JSON, so here are the numbers: about ${(share * 100).toFixed(0)}% of the ${t.toFixed(1)}% toss-up went Anthropic-coded, ${((1 - share) * 100).toFixed(0)}% OpenAI-coded (${o.toFixed(1)}% → ${newOpen.toFixed(1)}% Open, ${a.toFixed(1)}% → ${newAnth.toFixed(1)}% Anthropic). The slop abides; mixed-signal posts are the secret seasoning.`;
   }
 
+  console.log("[referee]", {
+    model,
+    recap,
+    before: { openAI: o, anthropic: a, tossUp: t },
+    after: { openAI: newOpen, anthropic: newAnth, tossUp: newToss },
+    anthropicShareOfTossUp: share,
+  });
+
   return NextResponse.json({
     scores: { openAI: newOpen, anthropic: newAnth, tossUp: newToss },
-    recap,
   });
 }
