@@ -350,7 +350,7 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
     return {
       handle,
       ...(displayName ? { displayName } : {}),
-      scores: { openAI: 33.33, anthropic: 33.33, tossUp: 33.34 },
+      scores: { openAI: 50, anthropic: 50, tossUp: 0 },
       receipts: [
         {
           reason: "no_posts",
@@ -494,10 +494,10 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
   let t: number;
 
   if (labSum < 1e-6) {
-    // No lab-flagged weighted mass (e.g. only general AI). Equal thirds so UI still parses.
-    o = 33.33;
-    a = 33.33;
-    t = 33.34;
+    // No lab-flagged weighted mass: keep Open-vs-Anth ambiguous (prior two-way shrug), zero toss-up.
+    o = 50;
+    a = 50;
+    t = 0;
   } else {
     o = round2((openAIPoints / labSum) * 100);
     a = round2((anthropicPoints / labSum) * 100);

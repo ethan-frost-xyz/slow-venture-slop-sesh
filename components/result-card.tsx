@@ -4,6 +4,7 @@ import {
   CardContent,
   CardDescription,
   CardFooter,
+  CardAction,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -39,37 +40,38 @@ export function ResultCard({ result }: Props) {
   return (
     <Card className="border-border/80 shadow-lg shadow-black/20 ring-2 ring-foreground/5">
       <CardHeader className="border-b border-border/60 pb-4">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <CardTitle className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-lg sm:text-xl">
-              {displayName ? (
-                <>
-                  <span>{displayName}</span>
-                  <span className="font-normal text-muted-foreground">
-                    @{handle}
-                  </span>
-                </>
-              ) : (
-                <span>@{handle}</span>
-              )}
-            </CardTitle>
-            <CardDescription className="mt-1 max-w-prose">
-              {vibeHeadline} · slop alignment (posting-style similarity only)
-            </CardDescription>
-          </div>
-          <Badge variant="secondary" className="flex max-w-[11rem] shrink-0 flex-col items-end gap-0.5 font-mono text-xs">
-            <span>{sourceLabel}</span>
-            <span className="text-[0.65rem] font-normal text-muted-foreground">
+        <CardTitle className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-lg sm:text-xl">
+          {displayName ? (
+            <>
+              <span>{displayName}</span>
+              <span className="font-normal text-muted-foreground">@{handle}</span>
+            </>
+          ) : (
+            <span>@{handle}</span>
+          )}
+        </CardTitle>
+        <CardDescription className="mt-1 max-w-prose text-pretty">
+          {vibeHeadline} · slop alignment (posting-style similarity only)
+        </CardDescription>
+        <CardAction className="justify-self-end">
+          <Badge
+            variant="secondary"
+            className="h-auto min-h-0 shrink-0 flex-col items-end justify-center gap-0.5 overflow-visible py-1.5 text-right align-top font-mono text-xs leading-tight whitespace-normal"
+          >
+            <span className="whitespace-nowrap">{sourceLabel}</span>
+            <span className="text-[0.65rem] font-normal leading-snug whitespace-nowrap text-muted-foreground">
               {aiRelevantPct.toFixed(1)}% AI-relevant · {totalPosts} posts
             </span>
           </Badge>
+        </CardAction>
+        <div className="col-span-2 mt-3 w-full">
+          <ScoreSpectrum
+            openAI={scores.openAI}
+            anthropic={scores.anthropic}
+            tossUp={scores.tossUp}
+            caption="Lab split sums to 100% across posts that mention at least one lab (general AI chatter excluded)."
+          />
         </div>
-        <ScoreSpectrum
-          openAI={scores.openAI}
-          anthropic={scores.anthropic}
-          tossUp={scores.tossUp}
-          caption="Lab split sums to 100% across posts that mention at least one lab (general AI chatter excluded)."
-        />
       </CardHeader>
       <CardContent className="space-y-5 pt-2">
         <p className="text-center text-sm font-semibold uppercase tracking-wider text-muted-foreground sm:text-base">
