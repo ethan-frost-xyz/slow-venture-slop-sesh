@@ -19,22 +19,13 @@ export function ScoreSpectrum({ openAI, anthropic, className }: Props) {
       </div>
       <div className="relative h-3 overflow-hidden rounded-full bg-muted ring-1 ring-border/60">
         <div
-          className="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-orange-500/45 to-transparent"
-          aria-hidden
-        />
-        <div
-          className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-emerald-500/35 to-transparent"
-          aria-hidden
-        />
-        <div
           className="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background bg-foreground shadow-md"
           style={{ left: `${position}%` }}
           title="Profile slop alignment on this axis (not affiliation)"
         />
       </div>
       <p className="text-center text-xs text-muted-foreground">
-        Pointer = where this profile sits vs common lab-hype post shapes · not
-        employment
+        Not employment or affiliation.
       </p>
     </div>
   );

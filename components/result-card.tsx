@@ -71,12 +71,34 @@ export function ResultCard({ result }: Props) {
           <ul className="space-y-2">
             {receipts.map((r, i) => (
               <li
-                key={`${r.text}-${i}`}
+                key={`${r.postUrl ?? r.text}-${i}`}
                 className="rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-sm leading-snug"
               >
-                <span className="text-xs text-muted-foreground">{r.reason}</span>
-                <span className="mx-1 text-muted-foreground">·</span>
-                <span className="italic">&ldquo;{r.text}&rdquo;</span>
+                <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                  <span className="text-xs text-muted-foreground">{r.reason}</span>
+                  {r.createdAt ? (
+                    <time
+                      className="text-[0.65rem] font-mono text-muted-foreground"
+                      dateTime={r.createdAt}
+                    >
+                      {new Date(r.createdAt).toLocaleString(undefined, {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}
+                    </time>
+                  ) : null}
+                  {r.postUrl ? (
+                    <a
+                      href={r.postUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[0.65rem] font-medium text-primary underline-offset-2 hover:underline"
+                    >
+                      Open post
+                    </a>
+                  ) : null}
+                </div>
+                <p className="mt-1 italic">&ldquo;{r.text}&rdquo;</p>
               </li>
             ))}
           </ul>

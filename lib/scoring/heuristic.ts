@@ -274,6 +274,12 @@ function truncate(s: string, max: number): string {
   return `${t.slice(0, max - 1)}…`;
 }
 
+function publicPostUrl(handle: string, postId: string): string {
+  const h = encodeURIComponent(handle);
+  const id = encodeURIComponent(postId);
+  return `https://x.com/${h}/status/${id}`;
+}
+
 function hasAiAnchor(textNorm: string): boolean {
   if (LAB_NAMES_AI.some((x) => textNorm.includes(x))) return true;
   if (MODEL_NAMES_AI.some((x) => textNorm.includes(x))) return true;
@@ -443,6 +449,8 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
       receipts.push({
         reason: bits.join(" · "),
         text: truncate(p.text, 140),
+        createdAt: p.createdAt,
+        postUrl: publicPostUrl(handle, p.id),
       });
     }
   }

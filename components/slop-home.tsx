@@ -52,22 +52,17 @@ export function SlopHome() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <header className="border-b border-border/60 bg-card/40 px-4 py-6 sm:px-8">
+      <header className="border-b border-border px-4 py-5 sm:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <p className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.25em] text-muted-foreground">
             Slop Sentiment Index
           </p>
-          <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight sm:text-4xl">
-            <span className="bg-gradient-to-r from-emerald-600 to-orange-500 bg-clip-text text-transparent">
-              Slop alignment
-            </span>{" "}
-            score for a profile
+          <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+            Slop alignment score for a profile
           </h1>
           <p className="mx-auto mt-3 max-w-lg text-sm text-muted-foreground sm:text-base">
-            Enter a public X handle to review that profile&apos;s{" "}
-            <strong>slop alignment score</strong>—how their posts resemble
-            OpenAI-coded vs Anthropic-coded hype vs neutral/indie tone. Not
-            employment, bribery, or sponsorship.
+            there was a bunch of slop here and idk what to put and ran out of
+            time but just know there was hella em dashes here before fr
           </p>
         </div>
       </header>
@@ -107,8 +102,8 @@ export function SlopHome() {
         !error &&
         !touched ? (
           <StateMessage
-            title="Pick a profile to review"
-            description="Enter a handle above. Without live X access, scores use deterministic synthetic sample posts—not the profile’s real timeline."
+            title="Pick a profile"
+            description="Enter a handle above."
           />
         ) : null}
       </main>
