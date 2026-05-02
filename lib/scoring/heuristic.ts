@@ -492,8 +492,6 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
     let dOpen = 0;
     let dAnth = 0;
 
-    if (textNorm.includes("benchmark")) tagSet.add("benchmark glazing");
-
     const onlyOpen = openMFinal && !anthMFinal;
     const onlyAnth = anthMFinal && !openMFinal;
 
