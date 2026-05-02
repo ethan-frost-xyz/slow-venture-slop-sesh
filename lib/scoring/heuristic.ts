@@ -427,12 +427,18 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
     anthropicPoints += Math.max(0, dAnth);
     neutralPoints += Math.max(0, dNeut);
 
-    if (receipts.length < 6) {
+    if (receipts.length < 25) {
       const bits: string[] = [];
       if (openMFinal) bits.push("OpenAI/GPT signal");
       if (anthMFinal) bits.push("Anthropic/Claude signal");
-      if (neg) bits.push("negative tilt");
-      if (boostN) bits.push("booster phrasing");
+      if (openaiVer || anthropicVer) bits.push("version signal");
+      if (neg && (openMFinal || anthMFinal))
+        bits.push("negative → cross-lab boost");
+      if (boostN > 0) bits.push("booster phrasing");
+      if (p.likeCount != null && p.likeCount >= 100) {
+        bits.push(`${p.likeCount.toLocaleString()} likes`);
+      }
+      if (hasHypeSignal(textNorm) && !openM && !anthM) bits.push("hype only");
       if (bits.length === 0) bits.push("general AI");
       receipts.push({
         reason: bits.join(" · "),
@@ -509,19 +515,38 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
     clamp(0.25 + dominantDelta / 120 + aiPosts * 0.035, 0, 1);
   const confidence = round2(clamp(Math.min(rawConf, cap), 0.05, cap));
 
-  const topReceipts = receipts.slice(0, 5);
-  while (topReceipts.length < 3) {
-    topReceipts.push({
-      reason: "base_rate",
-      text: "Mostly vibes and generic tech talk — lab signals are subtle.",
-    });
-  }
+  const anthropicOnlyReceipts = receipts.filter(
+    (r) =>
+      r.reason.includes("Anthropic/Claude signal") &&
+      !r.reason.includes("OpenAI/GPT signal"),
+  );
+  const bothLabReceipts = receipts.filter(
+    (r) =>
+      r.reason.includes("Anthropic/Claude signal") &&
+      r.reason.includes("OpenAI/GPT signal"),
+  );
+  const openaiOnlyReceipts = receipts.filter(
+    (r) =>
+      r.reason.includes("OpenAI/GPT signal") &&
+      !r.reason.includes("Anthropic/Claude signal"),
+  );
+  const neutralReceipts = receipts.filter(
+    (r) =>
+      !r.reason.includes("OpenAI/GPT signal") &&
+      !r.reason.includes("Anthropic/Claude signal"),
+  );
+  const orderedReceipts = [
+    ...anthropicOnlyReceipts,
+    ...bothLabReceipts,
+    ...openaiOnlyReceipts,
+    ...neutralReceipts,
+  ];
 
   return {
     handle,
     scores: { openAI: o, anthropic: a, neutral: n },
     confidence,
-    receipts: topReceipts.slice(0, 5),
+    receipts: orderedReceipts.slice(0, 15),
     tags: Array.from(tagSet).slice(0, 5),
     vibeHeadline,
     postsAnalyzed: totalPosts,
