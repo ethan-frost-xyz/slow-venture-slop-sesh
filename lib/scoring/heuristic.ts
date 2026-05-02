@@ -84,6 +84,8 @@ const BOOSTER_PHRASES = [
   "cooked",
   "unfair",
   "wow",
+  "killed",
+  "heat",
   "shipped",
   "game over",
   "best",
@@ -101,7 +103,14 @@ function hasStrongNegative(textNorm: string): boolean {
   const negs = [
     "mid",
     "meh",
+    "chopped",
+    "shit",
+    "cheeks",
+    "cooked",
+    "compute constrained",
+    "rate limited",
     "overhyped",
+    "lawsuit",
     "over-hyped",
     "fumbled",
     "not impressed",
@@ -123,18 +132,27 @@ function hasStrongNegative(textNorm: string): boolean {
 }
 
 /** OpenAI-scoped terms for directed sentiment and AI relevance (exclusive vs broad bucket). */
+/** Matching uses {@link normalizeForLabTerms} so gpt-5 / gpt 5 / gpt 5 align; list uses hyphen forms where natural. */
 const OPENAI_DIRECT_TERMS = [
   "openai",
   "chatgpt",
+  "chatgpt pro",
+  "chatgpt plus",
+  "chatgpt business",
+  "chatgpt enterprise",
+  "sama",
+  "sam altman",
   "gpt-",
   "gpt ",
   "gpt3",
   "gpt4",
   "gpt5",
+  "gpt-3",
+  "gpt-4",
+  "gpt-5",
+  "gpt-4.1",
   "gpt-4o",
   "gpt4o",
-  "gpt-4.1",
-  "gpt-5",
   "gpt-5.1",
   "gpt-5.2",
   "gpt-5.3",
@@ -158,11 +176,11 @@ const OPENAI_DIRECT_TERMS = [
   "o3 deep research",
   "o4-mini deep research",
   "sora",
-  "sora 2",
-  "sora 3",
   "sora-2",
-  "sora 2 pro",
+  "sora-3",
   "sora-2-pro",
+  "sora 2 pro",
+  "image 2",
   "dall-e",
   "dalle",
   "codex",
@@ -175,74 +193,91 @@ const OPENAI_DIRECT_TERMS = [
   "gpt-5-codex-mini",
   "gpt-5.1-codex",
   "codex-mini-latest",
-  "chatgpt pro",
-  "chatgpt plus",
-  "chatgpt business",
-  "chatgpt enterprise",
   "operator",
   "deep research",
   "canvas",
   "realtime api",
   "gpt-realtime",
   "gpt-audio",
-  "assistants api",
-  "responses api",
   "openai projects",
-  "sam altman",
 ];
 
 /** Anthropic-scoped terms for directed sentiment and AI relevance (exclusive vs broad bucket). */
+/** Same hyphen/space folding as OpenAI; opus-4 / opus 4 share one normalized key for receipts. */
 const ANTHROPIC_DIRECT_TERMS = [
   "anthropic",
   "anthropic api",
   "claude api",
   "claude",
   "claude.ai",
+  "dario",
+  "dario amodei",
   "opus",
   "sonnet",
   "haiku",
+  "mythos",
   "opusplan",
   "opus[1m]",
   "sonnet[1m]",
-  "constitutional ai",
-  "claude code",
-  "ultrareview",
-  "claude cowork",
-  "claude projects",
-  "extended thinking",
-  "prompt caching",
-  "artifacts",
-  "claude artifacts",
-  "claude desktop",
-  "claude opus",
-  "claude sonnet",
-  "claude haiku",
+  "opus-4",
+  "opus-3",
+  "opus 4",
+  "opus 3",
+  "sonnet-4",
+  "sonnet-3",
+  "sonnet 4",
+  "sonnet 3",
+  "haiku-4",
+  "haiku-3",
+  "haiku 4",
+  "claude-4",
+  "claude-3",
   "claude-opus-4-7",
   "claude-sonnet-4-6",
   "claude-haiku-4-5",
   "claude-opus-4-6",
   "claude-sonnet-4-5",
   "claude-opus-4-5",
-  "opus 4",
-  "sonnet 4",
-  "haiku 4",
-  "sonnet 3",
-  "opus 3",
-  "claude 4",
-  "claude 3",
-  "claude 4.5",
-  "claude 4.6",
-  "claude 4.7",
-  "claude 3.5",
-  "claude 3.7",
+  "claude-4.5",
+  "claude-4.6",
+  "claude-4.7",
+  "claude-3.5",
+  "claude-3.7",
+  "claude code",
+  "cowork",
+  "claude projects",
+  "prompt caching",
+  "claude artifacts",
+  "claude desktop",
+  "claude opus",
+  "claude sonnet",
+  "claude haiku",
 ];
+
+/**
+ * Lowercase, treat hyphens/underscores as spaces, collapse whitespace — lab-term substring
+ * matching so gpt-5 / gpt 5 / gpt 5 and opus-4 / opus 4 behave the same.
+ */
+function normalizeForLabTerms(s: string): string {
+  return s.toLowerCase().replace(/[\-_]+/g, " ").replace(/\s+/g, " ");
+}
+
+/** Longest stored term wins per normalized key (clearer receipts). */
+function labTermMatches(textNorm: string, terms: readonly string[]): string[] {
+  const textLab = normalizeForLabTerms(textNorm);
+  const byNorm = new Map<string, string>();
+  for (const term of terms) {
+    const tn = normalizeForLabTerms(term);
+    if (!tn || !textLab.includes(tn)) continue;
+    const prev = byNorm.get(tn);
+    if (!prev || term.length > prev.length) byNorm.set(tn, term);
+  }
+  return [...byNorm.values()].sort((a, b) => b.length - a.length || a.localeCompare(b));
+}
 
 /** Substrings from OPENAI_DIRECT_TERMS (and regex fallbacks) that appear in normalized text */
 function flaggedOpenAIDirectPhrases(textNorm: string): string[] {
-  const found = new Set<string>();
-  for (const term of OPENAI_DIRECT_TERMS) {
-    if (textNorm.includes(term)) found.add(term);
-  }
+  const found = new Set(labTermMatches(textNorm, OPENAI_DIRECT_TERMS));
   if (/\bgpt\b/.test(textNorm)) found.add("gpt");
   if (/\bo1\b/.test(textNorm)) found.add("o1");
   if (/\bo3\b/.test(textNorm)) found.add("o3");
@@ -256,11 +291,7 @@ function mentionsOpenAIDirect(textNorm: string): boolean {
 
 /** Substrings from ANTHROPIC_DIRECT_TERMS that appear in normalized text */
 function flaggedAnthropicDirectPhrases(textNorm: string): string[] {
-  const found = new Set<string>();
-  for (const term of ANTHROPIC_DIRECT_TERMS) {
-    if (textNorm.includes(term)) found.add(term);
-  }
-  return [...found].sort((a, b) => b.length - a.length || a.localeCompare(b));
+  return labTermMatches(textNorm, ANTHROPIC_DIRECT_TERMS);
 }
 
 function mentionsAnthropicDirect(textNorm: string): boolean {
@@ -291,21 +322,18 @@ function extractVersionSignals(textNorm: string): {
   openaiVer: boolean;
   anthropicVer: boolean;
 } {
-  // OpenAI version patterns: 5.x, 5, o-series already covered by OPENAI_DIRECT_TERMS
-  // Matches: "5.5", "5.4", "5.3", "5.2", "5.1", "5.0", "gpt 5", "model 5"
-  // Also standalone "o3", "o4", "o1" already in OPENAI_DIRECT_TERMS
-  const openaiVerPattern = /\b5\.\d\b|\bgpt[\s\-]?5\b|\bmodel 5\b|\bversion 5\b/;
+  const lab = normalizeForLabTerms(textNorm);
+  // OpenAI: 5.x decimals, gpt/model/version + 5 (hyphens already folded to spaces in lab)
+  const openaiVerPattern =
+    /\b5\.\d\b|\bgpt\s*5\b|\bmodel\s*5\b|\bversion\s*5\b/;
 
-  // Anthropic version patterns: 4.x (Claude 4 series), 3.x (Claude 3 series)
-  // Matches: "4.5", "4.6", "4.7", "4.8", "4.9", "3.5", "3.6", "3.7", "claude 4", "claude 3"
-  // Be careful not to catch generic numbers — require context (preceded/followed by model-adjacent words)
-  // OR standalone decimal like "4.5" / "4.7" in an AI-relevant tweet context
+  // Anthropic: 4.x / 3.x decimals, claude/model/version + 3 or 4
   const anthropicVerPattern =
-    /\b4\.\d\b|\b3\.\d\b|\bclaude[\s\-]?[34]\b|\bmodel [34]\b|\bversion [34]\b/;
+    /\b4\.\d\b|\b3\.\d\b|\bclaude\s*[34]\b|\bmodel\s*[34]\b|\bversion\s*[34]\b/;
 
   return {
-    openaiVer: openaiVerPattern.test(textNorm),
-    anthropicVer: anthropicVerPattern.test(textNorm),
+    openaiVer: openaiVerPattern.test(lab),
+    anthropicVer: anthropicVerPattern.test(lab),
   };
 }
 
@@ -517,10 +545,10 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
     vibeHeadline = "Both-sides AI maximalist";
   } else {
     const delta = o - a;
-    if (delta > 40) vibeHeadline = "Signed, sealed, Sam-pilled";
+    if (delta > 40) vibeHeadline = "Really thought Sora was something special";
     else if (delta > 20) vibeHeadline = "OpenAI-coded posting reflex";
     else if (delta > 8) vibeHeadline = "Mild GPT energy";
-    else if (delta < -40) vibeHeadline = "Constitutional AI enjoyer";
+    else if (delta < -40) vibeHeadline = "Rate Limit Lover";
     else if (delta < -20) vibeHeadline = "Anthropic-coded posting reflex";
     else if (delta < -8) vibeHeadline = "Subtle Claude bias";
     else vibeHeadline = "Both-sides AI maximalist";
