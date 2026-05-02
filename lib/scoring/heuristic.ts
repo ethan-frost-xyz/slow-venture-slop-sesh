@@ -345,8 +345,13 @@ function hasBooster(textNorm: string): number {
   return Math.min(n, 3);
 }
 
+/** Drop http(s) links so path/query tokens (e.g. …/o44… on t.co) cannot match lab terms. */
+function stripHttpUrls(s: string): string {
+  return s.replace(/https?:\/\/[^\s]+/gi, " ");
+}
+
 function normalizeText(s: string): string {
-  return s.toLowerCase();
+  return stripHttpUrls(s).toLowerCase();
 }
 
 /** More weight to newer posts (half-life ~5 days). */
