@@ -18,7 +18,7 @@ export function HandleForm({ value, onChange, onSubmit, disabled }: Props) {
       }}
     >
       <div className="relative flex-1">
-        <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+        <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-sm font-medium text-primary">
           @
         </span>
         <Input

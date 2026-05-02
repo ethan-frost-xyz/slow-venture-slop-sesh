@@ -21,7 +21,7 @@ export function ScoreSpectrum({
     <div className={cn("space-y-2", className)}>
       <div className="flex justify-between text-[0.65rem] font-medium uppercase tracking-widest text-muted-foreground">
         <span>Anthropic-coded</span>
-        <span className="px-2">Toss-up</span>
+        <span className="px-2 text-primary">Toss-up</span>
         <span>OpenAI-coded</span>
       </div>
       <div className="flex h-3 w-full overflow-hidden rounded-full ring-1 ring-border/60">

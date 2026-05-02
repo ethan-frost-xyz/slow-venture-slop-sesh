@@ -130,7 +130,7 @@ export function ResultCard({ result }: Props) {
             <span>@{handle}</span>
           )}
         </CardTitle>
-        <CardDescription className="mt-1 max-w-prose text-pretty">
+        <CardDescription className="mt-1 max-w-prose text-pretty text-primary">
           {displayHeadline}
         </CardDescription>
         <CardAction className="justify-self-end">
@@ -160,7 +160,7 @@ export function ResultCard({ result }: Props) {
           ) : null}
           <div className={refereeScores ? "animate-in fade-in duration-500" : ""}>
             {refereeScores ? (
-              <p className="mb-1 text-center text-[0.65rem] font-semibold uppercase tracking-wider text-foreground">
+              <p className="mb-1 text-center text-[0.65rem] font-semibold uppercase tracking-wider text-primary">
                 After · Grok
               </p>
             ) : null}
@@ -180,7 +180,7 @@ export function ResultCard({ result }: Props) {
             <AlertDescription>{refereeError}</AlertDescription>
           </Alert>
         ) : null}
-        <p className="text-center text-sm font-semibold uppercase tracking-wider text-muted-foreground sm:text-base">
+        <p className="text-center text-sm font-semibold uppercase tracking-wider text-primary sm:text-base">
           Slop alignment score
         </p>
         {refereeScores ? (
@@ -196,7 +196,7 @@ export function ResultCard({ result }: Props) {
               </div>
             </div>
             <div className="animate-in fade-in duration-500">
-              <p className="mb-2 text-center text-[0.65rem] font-semibold uppercase tracking-wider text-foreground">
+              <p className="mb-2 text-center text-[0.65rem] font-semibold uppercase tracking-wider text-primary">
                 After · Grok
               </p>
               <div className="grid grid-cols-3 gap-3 text-center sm:gap-4">
@@ -239,7 +239,7 @@ export function ResultCard({ result }: Props) {
             ) : null}
             {grokRecap ? (
               <div className="w-full max-w-prose rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5 text-left">
-                <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-muted-foreground">
+                <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-primary">
                   Ballistics report (why it shifted)
                 </p>
                 <p className="mt-1.5 text-sm leading-snug text-foreground">{grokRecap}</p>
@@ -261,7 +261,7 @@ export function ResultCard({ result }: Props) {
           </div>
         ) : null}
         <div>
-          <p className="mb-2 text-center text-[0.65rem] font-semibold uppercase tracking-wider text-muted-foreground">
+          <p className="mb-2 text-center text-[0.65rem] font-semibold uppercase tracking-wider text-primary">
             Receipts
           </p>
           <ul className="space-y-2">
@@ -353,9 +353,11 @@ export function ResultCard({ result }: Props) {
       </CardContent>
       <CardFooter className="flex flex-col gap-2 border-t border-border/60 text-center text-xs text-muted-foreground">
         <p>
-          <em>&ldquo;God is on the side of the heaviest cannon.&rdquo;</em>
+          <em className="text-primary">
+            &ldquo;God is on the side of the heaviest cannon.&rdquo;
+          </em>
           <br />
-          Napoleon Bonaparte
+          <span className="text-primary/90">Napoleon Bonaparte</span>
         </p>
       </CardFooter>
     </Card>

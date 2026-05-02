@@ -84,10 +84,10 @@ export function SlopHome() {
       <header className="border-b border-border px-4 py-5 sm:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <h1 className="font-heading text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-            Slop Sentiment Score
+            <span className="text-primary">Slop</span> Sentiment Score
           </h1>
           <p className="mx-auto mt-3 max-w-lg text-sm text-muted-foreground sm:text-base">
-            Political compass for the timeline.
+            Political compass for the <span className="text-primary">timeline</span>.
           </p>
         </div>
       </header>

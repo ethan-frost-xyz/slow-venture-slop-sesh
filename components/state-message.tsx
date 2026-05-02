@@ -14,7 +14,7 @@ export function StateMessage({ title, description, className }: Props) {
         className,
       )}
     >
-      <p className="font-medium text-foreground">{title}</p>
+      <p className="font-medium text-primary">{title}</p>
       {description ? (
         <p className="mt-2 text-sm text-muted-foreground">{description}</p>
       ) : null}
