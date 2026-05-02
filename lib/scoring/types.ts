@@ -23,6 +23,8 @@ export type ScoreReceipt = {
   likeCount?: number;
   /** Strong negative about a flagged lab; scoring credits the other lab */
   negativeLabMention?: boolean;
+  /** Lab-named post without strong negative; scoring credits the aligned lab(s) */
+  positiveLabMention?: boolean;
 };
 
 export type SlopScoreResult = {

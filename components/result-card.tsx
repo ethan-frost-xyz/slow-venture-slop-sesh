@@ -113,6 +113,13 @@ export function ResultCard({ result }: Props) {
                     >
                       Negative
                     </Badge>
+                  ) : r.positiveLabMention ? (
+                    <Badge
+                      variant="outline"
+                      className="shrink-0 border-emerald-500/40 bg-emerald-500/10 text-[0.65rem] font-medium text-emerald-950 dark:text-emerald-100"
+                    >
+                      Positive
+                    </Badge>
                   ) : null}
                   <span className="text-xs text-muted-foreground">{r.reason}</span>
                   {typeof r.likeCount === "number" ? (

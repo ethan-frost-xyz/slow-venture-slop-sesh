@@ -27,6 +27,8 @@ To call the Twitter/X API v2 (Bearer token):
 2. Set `X_BEARER_TOKEN` to an app-only Bearer token with read access.
 3. Set `SLOP_TRY_LIVE_X=1`
 
+Live mode fetches up to **200** of the account’s most recent posts using **paginated** X API v2 calls (`max_results` 100 per request, not a single invalid `max_results=200`).
+
 If the live request fails or returns an empty timeline, the app falls back to **synthetic sample** posts so scoring still runs.
 
 | Variable | Purpose |

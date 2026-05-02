@@ -514,7 +514,8 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
       if (openaiVer || anthropicVer) bits.push("version signal");
       if (neg && (openMFinal || anthMFinal))
         bits.push("negative → other lab");
-      if (boostN > 0) bits.push("booster phrasing");
+      if (boostN > 0 && (openMFinal || anthMFinal))
+        bits.push("booster phrasing");
       if (hasHypeSignal(textNorm) && !openM && !anthM) bits.push("hype only");
 
       const flaggedOpenAI = [
@@ -526,7 +527,7 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
         ...(anthropicVer ? ["Anthropic-style version cue in text"] : []),
       ];
 
-      // AI-relevant but no concrete receipt line (no lab/version/hype/booster/neg hooks).
+      // AI-relevant but no concrete receipt line (lab/version/hype-only/neg hooks; boosters listed only with lab flags).
       if (bits.length === 0) continue;
 
       receipts.push({
@@ -535,7 +536,9 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
         ...(flaggedAnthropic.length > 0 ? { flaggedAnthropic } : {}),
         ...(neg && (openMFinal || anthMFinal)
           ? { negativeLabMention: true }
-          : {}),
+          : (openMFinal || anthMFinal) && !neg
+            ? { positiveLabMention: true }
+            : {}),
         text: truncate(p.text, 140),
         createdAt: p.createdAt,
         postUrl: publicPostUrl(handle, p.id),
@@ -577,12 +580,12 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
   } else {
     const delta = o - a;
     if (delta > 40) vibeHeadline = "Really thought Sora was something special";
-    else if (delta > 20) vibeHeadline = "OpenAI-coded posting reflex";
+    else if (delta > 20) vibeHeadline = "Believes Codex is better but hasn't spent much time with CC";
     else if (delta > 8) vibeHeadline = "Mild GPT energy";
-    else if (delta < -40) vibeHeadline = "Rate Limit Lover";
+    else if (delta < -40) vibeHeadline = "Rate limit kink";
     else if (delta < -20) vibeHeadline = "Anthropic-coded posting reflex";
-    else if (delta < -8) vibeHeadline = "Subtle Claude bias";
-    else vibeHeadline = "Both-sides AI maximalist";
+    else if (delta < -8) vibeHeadline = "Slightly Negative on Data Centers but only with Bushwick girls";
+    else vibeHeadline = "Whatever model is cool or Bard user";
   }
 
   const sortedReceipts = sortReceiptsByCreatedAtDesc(receipts);
