@@ -36,5 +36,9 @@ export async function POST(request: Request) {
     meta: fetchResult.meta,
   });
 
+  if (process.env.NODE_ENV !== "production") {
+    console.log("[score]", JSON.stringify(scored, null, 2));
+  }
+
   return NextResponse.json(scored);
 }

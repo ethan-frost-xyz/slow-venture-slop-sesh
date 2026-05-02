@@ -3,7 +3,8 @@ import { cn } from "@/lib/utils";
 type Props = {
   openAI: number;
   anthropic: number;
-  caption: string;
+  /** Shown under the bar; omit when the parent renders the same copy (e.g. CardDescription). */
+  caption?: string;
   className?: string;
 };
 
@@ -25,7 +26,9 @@ export function ScoreSpectrum({ openAI, anthropic, caption, className }: Props) 
           title="Slop alignment on this axis"
         />
       </div>
-      <p className="text-center text-xs text-muted-foreground">{caption}</p>
+      {caption ? (
+        <p className="text-center text-xs text-muted-foreground">{caption}</p>
+      ) : null}
     </div>
   );
 }

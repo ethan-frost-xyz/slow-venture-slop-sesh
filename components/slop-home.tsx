@@ -10,6 +10,20 @@ import type { SlopScoreResult } from "@/lib/scoring/types";
 
 type ApiError = { error: string };
 
+function isSlopScoreResult(data: unknown): data is SlopScoreResult {
+  if (typeof data !== "object" || data === null || "error" in data) {
+    return false;
+  }
+  const scores = (data as { scores?: unknown }).scores;
+  if (typeof scores !== "object" || scores === null) return false;
+  const s = scores as Record<string, unknown>;
+  return (
+    typeof s.openAI === "number" &&
+    typeof s.anthropic === "number" &&
+    typeof s.neutral === "number"
+  );
+}
+
 export function SlopHome() {
   const [handle, setHandle] = useState("");
   const [loading, setLoading] = useState(false);
@@ -33,12 +47,22 @@ export function SlopHome() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ handle: h }),
       });
-      const data = (await res.json()) as SlopScoreResult | ApiError;
-      if (!res.ok || "error" in data) {
+      const data: unknown = await res.json();
+      if (!res.ok || (typeof data === "object" && data !== null && "error" in data)) {
         setResult(null);
         setError(
-          "error" in data ? data.error : "Something went wrong. Try again.",
+          typeof data === "object" &&
+            data !== null &&
+            "error" in data &&
+            typeof (data as ApiError).error === "string"
+            ? (data as ApiError).error
+            : "Something went wrong. Try again.",
         );
+        return;
+      }
+      if (!isSlopScoreResult(data)) {
+        setResult(null);
+        setError("Unexpected response from server. Try again.");
         return;
       }
       setResult(data);

@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -17,28 +18,41 @@ export function ResultCard({ result }: Props) {
   const { scores, receipts, tags, vibeHeadline, meta, displayName, handle } =
     result;
 
+  const sourceLabel =
+    meta.source === "live"
+      ? "Live posts"
+      : meta.source === "mock"
+        ? "Sample posts"
+        : meta.source === "cache"
+          ? "Cached posts"
+          : "Fallback sample";
+
   return (
     <Card className="border-border/80 shadow-lg shadow-black/20 ring-2 ring-foreground/5">
       <CardHeader className="border-b border-border/60 pb-4">
-        <div>
-          <CardTitle className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-lg sm:text-xl">
-            {displayName ? (
-              <>
-                <span>{displayName}</span>
-                <span className="font-normal text-muted-foreground">
-                  @{handle}
-                </span>
-              </>
-            ) : (
-              <span>@{handle}</span>
-            )}
-          </CardTitle>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-lg sm:text-xl">
+              {displayName ? (
+                <>
+                  <span>{displayName}</span>
+                  <span className="font-normal text-muted-foreground">
+                    @{handle}
+                  </span>
+                </>
+              ) : (
+                <span>@{handle}</span>
+              )}
+            </CardTitle>
+            <CardDescription className="mt-1 max-w-prose">
+              {vibeHeadline} · slop alignment (posting-style similarity only)
+            </CardDescription>
+          </div>
+          <Badge variant="secondary" className="shrink-0 font-mono text-xs">
+            {sourceLabel}
+          </Badge>
         </div>
-        <ScoreSpectrum
-          openAI={scores.openAI}
-          anthropic={scores.anthropic}
-          caption={`${vibeHeadline} · slop alignment (posting-style similarity only)`}
-        />
+        <ScoreSpectrum openAI={scores.openAI} anthropic={scores.anthropic} />
       </CardHeader>
       <CardContent className="space-y-5 pt-2">
         <p className="text-center text-sm font-semibold uppercase tracking-wider text-muted-foreground sm:text-base">
