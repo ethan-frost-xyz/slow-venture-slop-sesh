@@ -35,5 +35,8 @@ export async function POST(request: Request) {
     meta: fetchResult.meta,
   });
 
+  // TEMP: local debugging — remove before shipping
+  console.log(JSON.stringify(scored, null, 2));
+
   return NextResponse.json(scored);
 }

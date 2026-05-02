@@ -155,6 +155,23 @@ const OPENAI_DIRECT_TERMS = [
   "dall-e",
   "dalle",
   "codex",
+  "openai codex",
+  "o3-mini",
+  "o4-mini",
+  "o3 mini",
+  "o4 mini",
+  "chatgpt pro",
+  "chatgpt plus",
+  "operator",
+  "deep research",
+  "canvas",
+  "gpt-4o",
+  "gpt4o",
+  "realtime api",
+  "assistants api",
+  "sora 2",
+  "sora 3",
+  "openai projects",
   "sam altman",
 ];
 
@@ -167,6 +184,30 @@ const ANTHROPIC_DIRECT_TERMS = [
   "haiku",
   "constitutional ai",
   "claude code",
+  "claude.ai",
+  "claude cowork",
+  "claude projects",
+  "computer use",
+  "extended thinking",
+  "prompt caching",
+  "artifacts",
+  "claude artifacts",
+  "claude desktop",
+  "claude opus",
+  "claude sonnet",
+  "claude haiku",
+  "opus 4",
+  "sonnet 4",
+  "haiku 4",
+  "sonnet 3",
+  "opus 3",
+  "claude 4",
+  "claude 3",
+  "claude 4.5",
+  "claude 4.6",
+  "claude 4.7",
+  "claude 3.5",
+  "claude 3.7",
 ];
 
 function mentionsOpenAIDirect(textNorm: string): boolean {
@@ -179,6 +220,28 @@ function mentionsOpenAIDirect(textNorm: string): boolean {
 
 function mentionsAnthropicDirect(textNorm: string): boolean {
   return ANTHROPIC_DIRECT_TERMS.some((t) => textNorm.includes(t));
+}
+
+function extractVersionSignals(textNorm: string): {
+  openaiVer: boolean;
+  anthropicVer: boolean;
+} {
+  // OpenAI version patterns: 5.x, 5, o-series already covered by OPENAI_DIRECT_TERMS
+  // Matches: "5.5", "5.4", "5.3", "5.2", "5.1", "5.0", "gpt 5", "model 5"
+  // Also standalone "o3", "o4", "o1" already in OPENAI_DIRECT_TERMS
+  const openaiVerPattern = /\b5\.\d\b|\bgpt[\s\-]?5\b|\bmodel 5\b|\bversion 5\b/;
+
+  // Anthropic version patterns: 4.x (Claude 4 series), 3.x (Claude 3 series)
+  // Matches: "4.5", "4.6", "4.7", "4.8", "4.9", "3.5", "3.6", "3.7", "claude 4", "claude 3"
+  // Be careful not to catch generic numbers — require context (preceded/followed by model-adjacent words)
+  // OR standalone decimal like "4.5" / "4.7" in an AI-relevant tweet context
+  const anthropicVerPattern =
+    /\b4\.\d\b|\b3\.\d\b|\bclaude[\s\-]?[34]\b|\bmodel [34]\b|\bversion [34]\b/;
+
+  return {
+    openaiVer: openaiVerPattern.test(textNorm),
+    anthropicVer: anthropicVerPattern.test(textNorm),
+  };
 }
 
 function hasBooster(textNorm: string): number {
@@ -296,6 +359,9 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
 
     const openM = mentionsOpenAIDirect(textNorm);
     const anthM = mentionsAnthropicDirect(textNorm);
+    const { openaiVer, anthropicVer } = extractVersionSignals(textNorm);
+    const openMFinal = openM || openaiVer;
+    const anthMFinal = anthM || anthropicVer;
     const neg = hasStrongNegative(textNorm);
     const boostN = hasBooster(textNorm);
 
@@ -305,17 +371,17 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
 
     if (textNorm.includes("benchmark")) tagSet.add("benchmark glazing");
 
-    const onlyOpen = openM && !anthM;
-    const onlyAnth = anthM && !openM;
-    const bothLabs = openM && anthM;
+    const onlyOpen = openMFinal && !anthMFinal;
+    const onlyAnth = anthMFinal && !openMFinal;
+    const bothLabs = openMFinal && anthMFinal;
 
-    if (!openM && !anthM) {
+    if (!openMFinal && !anthMFinal) {
       dNeut += NEUTRAL_AI * w;
     } else {
       const onlyOneLabStrong =
         (onlyOpen || onlyAnth) && hasHypeSignal(textNorm) && boostN > 0;
 
-      if (openM) {
+      if (openMFinal) {
         if (neg) {
           dAnth += CROSS_WEIGHT * BASE_POS * w;
           dOpen += 0;
@@ -330,7 +396,7 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
         }
       }
 
-      if (anthM) {
+      if (anthMFinal) {
         if (neg) {
           dOpen += CROSS_WEIGHT * BASE_POS * w;
           dAnth += 0;
@@ -363,8 +429,8 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
 
     if (receipts.length < 6) {
       const bits: string[] = [];
-      if (openM) bits.push("OpenAI/GPT signal");
-      if (anthM) bits.push("Anthropic/Claude signal");
+      if (openMFinal) bits.push("OpenAI/GPT signal");
+      if (anthMFinal) bits.push("Anthropic/Claude signal");
       if (neg) bits.push("negative tilt");
       if (boostN) bits.push("booster phrasing");
       if (bits.length === 0) bits.push("general AI");
