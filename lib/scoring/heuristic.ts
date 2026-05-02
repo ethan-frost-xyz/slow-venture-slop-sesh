@@ -407,21 +407,29 @@ function publicPostUrl(handle: string, postId: string): string {
   return `https://x.com/${h}/status/${id}`;
 }
 
+/** Width in percentage points (Open − Anthropic) for each headline tier away from parity. */
+const VIBE_DELTA_BAND = 12;
+
 /**
  * Vibe headline from lab split percentages — same rules as the tail of {@link scoreSlopVibes}
  * (for UI after Grok reallocates toss-up into Open vs Anthropic).
+ *
+ * Tiers use symmetric bands of {@link VIBE_DELTA_BAND} points: neutral within ±band, then mild /
+ * medium / strong each span one more band (no empirical distribution in-repo — uniform spacing
+ * keeps the joke ladder predictable and even on both labs).
  */
 export function vibeHeadlineFromLabPercents(o: number, a: number, t: number): string {
   if (t >= o && t >= a && t >= 38) {
     return "Both-sides AI maximalist";
   }
   const delta = o - a;
-  if (delta > 40) return "Really thought Sora was something special";
-  if (delta > 20) return "Believes Codex is better but hasn't spent much time with CC";
-  if (delta > 8) return "Mild GPT energy";
-  if (delta < -40) return "Rate limit kink";
-  if (delta < -20) return "Anthropic-coded posting reflex";
-  if (delta < -8) return "Slightly Negative on Data Centers but only with Bushwick girls";
+  const b = VIBE_DELTA_BAND;
+  if (delta > 3 * b) return "Says ‘we’ when OpenAI ships something";
+  if (delta > 2 * b) return "Thought Sora was something special";
+  if (delta > b) return "Believes Codex is better but never tried CC";
+  if (delta < -3 * b) return "Rate limit kink";
+  if (delta < -2 * b) return "Started vibecoding in late 2025 early 2026";
+  if (delta < -b) return "Negative on Data Centers when at Bushwick houseparty";
   return "Whatever model is cool or Bard user";
 }
 
