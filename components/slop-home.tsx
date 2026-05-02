@@ -6,6 +6,7 @@ import { HandleForm } from "@/components/handle-form";
 import { ResultCard } from "@/components/result-card";
 import { StateMessage } from "@/components/state-message";
 import { Skeleton } from "@/components/ui/skeleton";
+import { normalizeHandle } from "@/lib/providers/types";
 import type { SlopScoreResult } from "@/lib/scoring/types";
 
 type ApiError = { error: string };
@@ -36,7 +37,7 @@ export function SlopHome() {
   const [touched, setTouched] = useState(false);
 
   const runScore = useCallback(async (raw: string) => {
-    const h = raw.trim().replace(/^@+/, "");
+    const h = normalizeHandle(raw);
     if (!h) {
       setError("Enter a public X username.");
       setResult(null);

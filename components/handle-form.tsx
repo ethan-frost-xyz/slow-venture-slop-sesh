@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { normalizeHandle } from "@/lib/providers/types";
 
 type Props = {
   value: string;
@@ -24,6 +25,13 @@ export function HandleForm({ value, onChange, onSubmit, disabled }: Props) {
         <Input
           value={value}
           onChange={(e) => onChange(e.target.value.replace(/^@+/, ""))}
+          onPaste={(e) => {
+            const text = e.clipboardData.getData("text/plain");
+            if (text === "") return;
+            // Avoid controlled-input paste races (value snaps back until React commits).
+            e.preventDefault();
+            onChange(normalizeHandle(text));
+          }}
           placeholder="username"
           autoComplete="off"
           spellCheck={false}
