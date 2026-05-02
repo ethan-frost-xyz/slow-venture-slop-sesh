@@ -39,12 +39,12 @@ If the live request fails or returns an empty timeline, the app falls back to **
 
 ## Grok tie-breaker (OpenRouter)
 
-Optional LLM that resolves **toss-up** mass. The UI button is **Let Grok decide** (default model **`x-ai/grok-2-mini`** via OpenRouter). Override with `OPENROUTER_REFEREE_MODEL` if you want another Grok or non-xAI model.
+Optional LLM that resolves **toss-up** mass. The UI button is **Let Grok Cook** (default **`x-ai/grok-4.1-fast`** with OpenRouter **`reasoning.enabled`**). Override with `OPENROUTER_REFEREE_MODEL` if you want another model.
 
 | Variable | Purpose |
 |----------|---------|
 | `OPENROUTER_API_KEY` | [OpenRouter](https://openrouter.ai/) API key — required for **Let Grok decide** |
-| `OPENROUTER_REFEREE_MODEL` | Optional model id (default `x-ai/grok-2-mini`) |
+| `OPENROUTER_REFEREE_MODEL` | Optional model id (default `x-ai/grok-4.1-fast`) |
 | `OPENROUTER_HTTP_REFERER` | Optional site URL for OpenRouter rankings |
 | `OPENROUTER_APP_TITLE` | Optional app title for OpenRouter rankings |
 

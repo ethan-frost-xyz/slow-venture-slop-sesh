@@ -1,13 +1,13 @@
 /**
  * Grok (via OpenRouter): redistributes toss-up % into Open vs Anthropic.
- * Env: OPENROUTER_API_KEY (required). Optional: OPENROUTER_REFEREE_MODEL (default x-ai/grok-2-mini).
+ * Env: OPENROUTER_API_KEY (required). Optional: OPENROUTER_REFEREE_MODEL (default x-ai/grok-4.1-fast + reasoning).
  */
 import type { ScoreReceipt } from "@/lib/scoring/types";
 import { NextResponse } from "next/server";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
-const DEFAULT_REFEREE_MODEL = "x-ai/grok-2-mini";
+const DEFAULT_REFEREE_MODEL = "x-ai/grok-4.1-fast";
 const MAX_TWEETS_IN_PROMPT = 12;
 
 type Body = {
@@ -139,6 +139,8 @@ anthropicShareOfTossUp = fraction of the ${t.toFixed(1)}% toss-up that moves to 
       body: JSON.stringify({
         model,
         temperature: 0.3,
+        max_tokens: 4096,
+        reasoning: { enabled: true },
         messages: [
           {
             role: "system",
@@ -153,10 +155,11 @@ anthropicShareOfTossUp = fraction of the ${t.toFixed(1)}% toss-up that moves to 
     if (!res.ok) {
       const errText = await res.text();
       console.error("[referee] OpenRouter error", res.status, errText.slice(0, 500));
-      return NextResponse.json(
-        { error: "Grok request failed. Try again." },
-        { status: 502 },
-      );
+      let userMsg = "Grok request failed. Try again.";
+      if (res.status === 404 && /No endpoints found|not found/i.test(errText)) {
+        userMsg = `OpenRouter has no route for model "${model}". Set OPENROUTER_REFEREE_MODEL to a current id (e.g. x-ai/grok-4.1-fast).`;
+      }
+      return NextResponse.json({ error: userMsg }, { status: 502 });
     }
 
     const data = (await res.json()) as {
