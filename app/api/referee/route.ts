@@ -1,6 +1,6 @@
 /**
  * Grok (via OpenRouter): redistributes toss-up % into Open vs Anthropic.
- * Env: OPENROUTER_API_KEY (required). Optional: OPENROUTER_REFEREE_MODEL (default x-ai/grok-4.1-fast, reasoning effort low).
+ * Env: OPENROUTER_API_KEY (required). Optional: OPENROUTER_REFEREE_MODEL (default x-ai/grok-4.1-fast, reasoning effort minimal).
  */
 import type { ScoreReceipt } from "@/lib/scoring/types";
 import { NextResponse } from "next/server";
@@ -115,7 +115,7 @@ Posts:
 ${lines.join("\n")}
 
 Reply with ONLY valid JSON, no other text:
-{"anthropicShareOfTossUp": <number 0-1>, "recap": "<required: 2-5 sentences. Unhinged, vivid, still truthful about the split: which lab's vibe won the toss-up and roughly how Open vs Anthropic scores move. You are weirdly invested in cannons (siege pieces, naval batteries, metaphorical broadsides of posting—commit). Plain language, no markdown>"}
+{"anthropicShareOfTossUp": <number 0-1>, "recap": "<required: 2-5 sentences. Unhinged, vivid, still truthful about the split: which lab's vibe won the toss-up and roughly how Open vs Anthropic scores move. You are a deranged connoisseur of AI slop—feeds, takes, lab-brained posting, the whole greasy buffet—commit to the bit. Plain language, no markdown>"}
 
 anthropicShareOfTossUp = fraction of the ${t.toFixed(1)}% toss-up that moves to Anthropic-coded; the rest goes to OpenAI-coded. New toss-up = 0.`;
 
@@ -140,12 +140,12 @@ anthropicShareOfTossUp = fraction of the ${t.toFixed(1)}% toss-up that moves to 
         model,
         temperature: 0.55,
         max_tokens: 4096,
-        reasoning: { effort: "low" },
+        reasoning: { effort: "minimal" },
         messages: [
           {
             role: "system",
             content:
-              "You are Grok judging ambiguous X posts for OpenAI-coded vs Anthropic-coded vibe. Output only the JSON object requested. The recap must justify anthropicShareOfTossUp with deranged energy: dramatic metaphors, feigned or real obsession with cannons (historical artillery, ship-of-the-line broadsides, or bringing the big guns of lab posting), and a clear read on which lab's aesthetic carried the toss-up—only cite what is plausible from the posts you were given.",
+              "You are Grok judging ambiguous X posts for OpenAI-coded vs Anthropic-coded vibe. Output only the JSON object requested. The recap must justify anthropicShareOfTossUp with deranged energy: vivid metaphors and unhinged affection for AI slop—the churn of models, discourse, hype cycles, and poster brain—not artillery or weapons. Stay truthful to what the posts support and which lab's aesthetic carried the toss-up.",
           },
           { role: "user", content: userPrompt },
         ],
@@ -212,7 +212,7 @@ anthropicShareOfTossUp = fraction of the ${t.toFixed(1)}% toss-up that moves to 
       ? recapRaw.trim().slice(0, 800)
       : "";
   if (!recap) {
-    recap = `Grok traversed the parapet, squinted through the embrasure, and still refuses to write a normal sentence—so here are numbers instead: about ${(share * 100).toFixed(0)}% of the ${t.toFixed(1)}% toss-up went Anthropic-coded, ${((1 - share) * 100).toFixed(0)}% OpenAI-coded (${o.toFixed(1)}% → ${newOpen.toFixed(1)}% Open, ${a.toFixed(1)}% → ${newAnth.toFixed(1)}% Anthropic). The 32-pounder of vibes has spoken; the mixed-signal posts are the powder charge.`;
+    recap = `Grok stared into the timeline trough and licked the spoon anyway—no recap JSON, so here are the numbers: about ${(share * 100).toFixed(0)}% of the ${t.toFixed(1)}% toss-up went Anthropic-coded, ${((1 - share) * 100).toFixed(0)}% OpenAI-coded (${o.toFixed(1)}% → ${newOpen.toFixed(1)}% Open, ${a.toFixed(1)}% → ${newAnth.toFixed(1)}% Anthropic). The slop abides; mixed-signal posts are the secret seasoning.`;
   }
 
   return NextResponse.json({

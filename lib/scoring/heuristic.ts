@@ -127,6 +127,11 @@ function hasStrongNegative(textNorm: string): boolean {
     "disappointing",
     "cope",
     "copium",
+    "non profit",
+    "nonprofit",
+    "non-profit",
+    "fired",
+    "psychosis",
   ];
   if (negs.some((n) => textNorm.includes(n))) return true;
   if (/\bpr\b/.test(textNorm) && !textNorm.includes("openpre")) return true;
