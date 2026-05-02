@@ -354,13 +354,27 @@ function recencyWeight(createdAt: string, now: number): number {
   const t = new Date(createdAt).getTime();
   if (Number.isNaN(t)) return 0.5;
   const days = (now - t) / 86400000;
-  return Math.exp(-days / 5);
+  return Math.exp(-days / 50);
 }
 
 function truncate(s: string, max: number): string {
   const t = s.trim();
   if (t.length <= max) return t;
   return `${t.slice(0, max - 1)}…`;
+}
+
+/** Newest first; receipts without `createdAt` sort last. */
+function sortReceiptsByCreatedAtDesc(receipts: ScoreReceipt[]): ScoreReceipt[] {
+  return [...receipts].sort((a, b) => {
+    const ta = a.createdAt ? Date.parse(a.createdAt) : NaN;
+    const tb = b.createdAt ? Date.parse(b.createdAt) : NaN;
+    const validA = !Number.isNaN(ta);
+    const validB = !Number.isNaN(tb);
+    if (validA && validB) return tb - ta;
+    if (validA && !validB) return -1;
+    if (!validA && validB) return 1;
+    return 0;
+  });
 }
 
 function publicPostUrl(handle: string, postId: string): string {
@@ -554,38 +568,13 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
     else vibeHeadline = "Both-sides AI maximalist";
   }
 
-  const anthropicOnlyReceipts = receipts.filter(
-    (r) =>
-      r.reason.includes("Anthropic/Claude signal") &&
-      !r.reason.includes("OpenAI/GPT signal"),
-  );
-  const bothLabReceipts = receipts.filter(
-    (r) =>
-      r.reason.includes("Anthropic/Claude signal") &&
-      r.reason.includes("OpenAI/GPT signal"),
-  );
-  const openaiOnlyReceipts = receipts.filter(
-    (r) =>
-      r.reason.includes("OpenAI/GPT signal") &&
-      !r.reason.includes("Anthropic/Claude signal"),
-  );
-  const neutralReceipts = receipts.filter(
-    (r) =>
-      !r.reason.includes("OpenAI/GPT signal") &&
-      !r.reason.includes("Anthropic/Claude signal"),
-  );
-  const orderedReceipts = [
-    ...anthropicOnlyReceipts,
-    ...bothLabReceipts,
-    ...openaiOnlyReceipts,
-    ...neutralReceipts,
-  ];
+  const sortedReceipts = sortReceiptsByCreatedAtDesc(receipts);
 
   return {
     handle,
     ...(displayName ? { displayName } : {}),
     scores: { openAI: o, anthropic: a, tossUp: t },
-    receipts: orderedReceipts.slice(0, 20),
+    receipts: sortedReceipts.slice(0, 20),
     tags: Array.from(tagSet).slice(0, 5),
     vibeHeadline,
     postsAnalyzed: totalPosts,
