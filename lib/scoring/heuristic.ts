@@ -423,12 +423,12 @@ export function vibeHeadlineFromLabPercents(o: number, a: number, t: number): st
   }
   const delta = o - a;
   const b = VIBE_DELTA_BAND;
-  if (delta > 4 * b) return "Says ‘we’ when OpenAI ships something";
-  if (delta > 3 * b) return "Gets misty when they ship a context window bump";
-  if (delta > 2 * b) return "Thought Sora was something special";
+  if (delta > 4 * b) return "Thinks Claude is a person";
+  if (delta > 3 * b) return "Thought Sora was something special";
+  if (delta > 2 * b) return "Says ‘we’ when OpenAI ships something";
   if (delta > b) return "Believes Codex is better but never tried CC";
-  if (delta < -4 * b) return "Would skip a wedding for an Opus priority window";
-  if (delta < -3 * b) return "Rate limit kink";
+  if (delta < -4 * b) return "Rate limit kink";
+  if (delta < -3 * b) return "Walks on Market Street with opus running";
   if (delta < -2 * b) return "Started vibecoding in late 2025 early 2026";
   if (delta < -b) return "Negative on Data Centers when at Bushwick houseparties";
   return "Reads code their own code";
