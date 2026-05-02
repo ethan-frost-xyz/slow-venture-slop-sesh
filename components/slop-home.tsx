@@ -2,7 +2,6 @@
 
 import { useCallback, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 import { HandleForm } from "@/components/handle-form";
 import { ResultCard } from "@/components/result-card";
 import { StateMessage } from "@/components/state-message";
@@ -32,7 +31,7 @@ export function SlopHome() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<SlopScoreResult | null>(null);
-  /** Bumps when a new score payload is applied so ResultCard remounts and clears Referee UI. */
+  /** Bumps at the start of every score run so ResultCard remounts with a clean Grok UI. */
   const [resultGen, setResultGen] = useState(0);
   const [touched, setTouched] = useState(false);
 
@@ -46,6 +45,7 @@ export function SlopHome() {
     setTouched(true);
     setLoading(true);
     setError(null);
+    setResultGen((n) => n + 1);
     try {
       const res = await fetch("/api/score", {
         method: "POST",
@@ -71,7 +71,6 @@ export function SlopHome() {
         return;
       }
       setResult(data);
-      setResultGen((n) => n + 1);
     } catch {
       setResult(null);
       setError("Network error. Check your connection and try again.");
@@ -121,22 +120,7 @@ export function SlopHome() {
           </div>
         ) : null}
 
-        {!loading && result ? (
-          <>
-            <div className="flex justify-center">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-auto min-h-0 py-1 text-xs text-muted-foreground hover:text-foreground"
-                onClick={() => setResultGen((n) => n + 1)}
-              >
-                Reset Grok demo (same scorecard, no refetch)
-              </Button>
-            </div>
-            <ResultCard key={resultGen} result={result} />
-          </>
-        ) : null}
+        {!loading && result ? <ResultCard key={resultGen} result={result} /> : null}
 
         {!loading &&
         !result &&

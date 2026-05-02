@@ -79,13 +79,14 @@ export class XPostProvider implements PostProvider {
         };
       }
       const userJson = (await userRes.json()) as {
-        data?: { id?: string; name?: string };
+        data?: { id?: string; name?: string; description?: string };
       };
       const userId = userJson.data?.id;
       if (!userId) {
         return { ok: false, error: "X user not found or inaccessible." };
       }
       const displayName = userJson.data?.name?.trim() || undefined;
+      const profileBio = userJson.data?.description?.trim() || undefined;
 
       const baseTimelineQuery = new URLSearchParams({
         max_results: String(TIMELINE_PAGE_SIZE),

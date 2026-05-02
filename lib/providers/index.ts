@@ -25,6 +25,7 @@ export async function resolvePostsForHandle(
         cachedAt: cached.fetchedAt,
         detail: cached.source,
         ...(cached.displayName ? { displayName: cached.displayName } : {}),
+        ...(cached.profileBio ? { profileBio: cached.profileBio } : {}),
       },
     };
   }
@@ -50,6 +51,7 @@ export async function resolvePostsForHandle(
         result.posts,
         result.meta.source,
         result.meta.displayName,
+        result.meta.profileBio,
       );
       return result;
     }
@@ -68,6 +70,7 @@ export async function resolvePostsForHandle(
         mockResult.posts,
         mockResult.meta.source,
         mockResult.meta.displayName,
+        mockResult.meta.profileBio,
       );
     }
     return {

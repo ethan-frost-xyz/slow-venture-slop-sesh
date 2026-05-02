@@ -7,6 +7,7 @@ type CacheEntry = {
   fetchedAt: number;
   source: string;
   displayName?: string;
+  profileBio?: string;
 };
 
 const store = new Map<string, CacheEntry>();
@@ -28,9 +29,16 @@ export function setCache(
   posts: Post[],
   source: string,
   displayName?: string,
+  profileBio?: string,
 ): void {
   const key = handle.trim().replace(/^@+/, "").toLowerCase();
-  store.set(key, { posts, fetchedAt: Date.now(), source, displayName });
+  store.set(key, {
+    posts,
+    fetchedAt: Date.now(),
+    source,
+    ...(displayName ? { displayName } : {}),
+    ...(profileBio ? { profileBio } : {}),
+  });
 }
 
 export function clearCache(): void {

@@ -17,6 +17,8 @@ export type PostsFetchMeta = {
   cachedAt?: number;
   /** Profile display name from the platform when available */
   displayName?: string;
+  /** Public profile bio / description (e.g. X `description`) when available */
+  profileBio?: string;
 };
 
 export type PostsFetchResult =

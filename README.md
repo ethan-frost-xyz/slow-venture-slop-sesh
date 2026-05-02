@@ -39,7 +39,7 @@ If the live request fails or returns an empty timeline, the app falls back to **
 
 ## Grok tie-breaker (OpenRouter)
 
-Optional LLM that resolves **toss-up** mass. The UI button is **Let Grok Cook** (default **`x-ai/grok-4.1-fast`** with OpenRouter **`reasoning.enabled`**). Override with `OPENROUTER_REFEREE_MODEL` if you want another model.
+Optional LLM that resolves **toss-up** mass. The UI button is **Let Grok Cook** (default **`x-ai/grok-4.1-fast`** with OpenRouter **`reasoning.effort: low`**). Override with `OPENROUTER_REFEREE_MODEL` if you want another model.
 
 | Variable | Purpose |
 |----------|---------|

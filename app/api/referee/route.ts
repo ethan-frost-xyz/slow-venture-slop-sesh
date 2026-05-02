@@ -1,6 +1,6 @@
 /**
  * Grok (via OpenRouter): redistributes toss-up % into Open vs Anthropic.
- * Env: OPENROUTER_API_KEY (required). Optional: OPENROUTER_REFEREE_MODEL (default x-ai/grok-4.1-fast + reasoning).
+ * Env: OPENROUTER_API_KEY (required). Optional: OPENROUTER_REFEREE_MODEL (default x-ai/grok-4.1-fast, reasoning effort low).
  */
 import type { ScoreReceipt } from "@/lib/scoring/types";
 import { NextResponse } from "next/server";
@@ -140,7 +140,7 @@ anthropicShareOfTossUp = fraction of the ${t.toFixed(1)}% toss-up that moves to 
         model,
         temperature: 0.3,
         max_tokens: 4096,
-        reasoning: { enabled: true },
+        reasoning: { effort: "low" },
         messages: [
           {
             role: "system",
