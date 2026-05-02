@@ -502,7 +502,7 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
     handle,
     ...(displayName ? { displayName } : {}),
     scores: { openAI: o, anthropic: a },
-    receipts: orderedReceipts.slice(0, 5),
+    receipts: orderedReceipts.slice(0, 20),
     tags: Array.from(tagSet).slice(0, 5),
     vibeHeadline,
     postsAnalyzed: totalPosts,
