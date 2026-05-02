@@ -1,3 +1,4 @@
+import { getCache, setCache } from "@/lib/cache/post-cache";
 import { MockPostProvider } from "@/lib/providers/mock-provider";
 import type { PostProvider, PostsFetchResult } from "@/lib/providers/types";
 import { normalizeHandle } from "@/lib/providers/types";
@@ -12,6 +13,19 @@ export async function resolvePostsForHandle(
   const handle = normalizeHandle(rawHandle);
   if (!handle) {
     return { ok: false, error: "Please enter an X username." };
+  }
+
+  const cached = getCache(handle);
+  if (cached && cached.posts.length > 0) {
+    return {
+      ok: true,
+      posts: cached.posts,
+      meta: {
+        source: "cache",
+        cachedAt: cached.fetchedAt,
+        detail: cached.source,
+      },
+    };
   }
 
   const forceMock =
@@ -30,6 +44,7 @@ export async function resolvePostsForHandle(
   for (const p of providers) {
     const result = await p.fetchPosts(handle);
     if (result.ok && result.posts.length > 0) {
+      setCache(handle, result.posts, result.meta.source);
       return result;
     }
     if (!result.ok) {
@@ -41,6 +56,9 @@ export async function resolvePostsForHandle(
   const mock = new MockPostProvider();
   const mockResult = await mock.fetchPosts(handle);
   if (mockResult.ok) {
+    if (mockResult.posts.length > 0) {
+      setCache(handle, mockResult.posts, mockResult.meta.source);
+    }
     return {
       ...mockResult,
       meta: {

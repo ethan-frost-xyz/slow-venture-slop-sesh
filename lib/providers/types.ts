@@ -4,13 +4,17 @@ export type Post = {
   text: string;
   /** ISO 8601 timestamp */
   createdAt: string;
+  /** From platform public_metrics when available */
+  likeCount?: number;
 };
 
 export type PostsFetchMeta = {
   /** Where the text ultimately came from */
-  source: "live" | "mock" | "fallback";
+  source: "live" | "mock" | "fallback" | "cache";
   /** Optional note for UI/debug, e.g. live fetch failed */
   detail?: string;
+  /** Epoch ms when a cached bundle was stored */
+  cachedAt?: number;
 };
 
 export type PostsFetchResult =

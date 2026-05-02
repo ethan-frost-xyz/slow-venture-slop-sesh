@@ -42,7 +42,7 @@ export class XPostProvider implements PostProvider {
       }
 
       const timelineRes = await fetch(
-        `https://api.twitter.com/2/users/${userId}/tweets?max_results=50&tweet.fields=created_at,text`,
+        `https://api.twitter.com/2/users/${userId}/tweets?max_results=100&tweet.fields=created_at,text,public_metrics`,
         {
           headers: { Authorization: `Bearer ${token}` },
           cache: "no-store",
@@ -55,12 +55,21 @@ export class XPostProvider implements PostProvider {
         };
       }
       const timeline = (await timelineRes.json()) as {
-        data?: Array<{ id: string; text?: string; created_at?: string }>;
+        data?: Array<{
+          id: string;
+          text?: string;
+          created_at?: string;
+          public_metrics?: { like_count?: number };
+        }>;
       };
       const posts: Post[] = (timeline.data ?? []).map((t) => ({
         id: t.id,
         text: t.text ?? "",
         createdAt: t.created_at ?? new Date().toISOString(),
+        likeCount:
+          typeof t.public_metrics?.like_count === "number"
+            ? t.public_metrics.like_count
+            : undefined,
       }));
 
       return {

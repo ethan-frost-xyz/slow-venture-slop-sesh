@@ -4,19 +4,162 @@ import type {
   SlopScoreResult,
 } from "@/lib/scoring/types";
 
-const OPENAI_TERMS = [
+/** Broad lab / vendor names for AI relevance */
+const LAB_NAMES_AI = [
   "openai",
+  "anthropic",
+  "google deepmind",
+  "meta ai",
+  "mistral",
+  "xai",
+  "grok",
+];
+
+const MODEL_NAMES_AI = [
+  "gpt",
   "chatgpt",
-  "gpt-4",
-  "gpt-5",
+  "claude",
+  "opus",
+  "sonnet",
+  "haiku",
+  "gemini",
+  "llama",
+  "grok",
   "o1",
   "o3",
+  "o4",
+  "sora",
   "dall-e",
   "dalle",
+];
+
+const BROAD_AI_CONCEPTS = [
+  "llm",
+  "large language model",
+  "ai model",
+  "foundation model",
+  "base model",
+  "fine-tune",
+  "fine-tuning",
+  "rlhf",
+  "context window",
+  "tokens",
+  "inference",
+  "benchmark",
+  "evals",
+  "eval",
+  "leaderboard",
+  "agent",
+  "agentic",
+  "ai agent",
+  "multimodal",
+  "reasoning model",
+  "the model",
+  "this model",
+  "best model",
+  "new model",
+  "vibe coding",
+  "cursor",
+  "copilot",
+  "claude code",
+  "codex",
+  "ai lab",
+  "frontier model",
+  "frontier lab",
+  "model release",
+  "model drop",
+  "agi",
+  "artificial intelligence",
+];
+
+/** Hype/doom — AI-relevant only when paired with another AI anchor (lab/model/concept). */
+const HYPE_DOOM_SIGNALS = [
+  "cooked",
+  "game over",
+  "game changer",
+  "unfair",
+  "insane",
+  "mind-blowing",
+  "mind blowing",
+  "shocked",
+  "wow",
+  "shipped",
+  "shipping",
+  "changed everything",
+  "not serious",
+  "wild",
+  "unreal",
+  "scary good",
+  "miles ahead",
+  "broken",
+  "next level",
+];
+
+/** Sentiment boosters (+ toward mentioned lab when not negated). */
+const BOOSTER_PHRASES = [
+  "insane",
+  "cooked",
+  "unfair",
+  "wow",
+  "shipped",
+  "game over",
+  "best",
+  "changed everything",
+  "mind-blowing",
+  "mind blowing",
+  "unreal",
+  "miles ahead",
+  "next level",
+];
+
+/** Negative sentiment — tweet-level; pair with lab mention to route cross-signal. */
+function hasStrongNegative(textNorm: string): boolean {
+  if (textNorm.includes("cooked in the bad way")) return true;
+  const negs = [
+    "mid",
+    "meh",
+    "overhyped",
+    "over-hyped",
+    "fumbled",
+    "not impressed",
+    "scam",
+    "struggling",
+    "behind",
+    "losing",
+    "slow",
+    "bloated",
+    "embarrassing",
+    "disappointing",
+    "cope",
+    "copium",
+  ];
+  if (negs.some((n) => textNorm.includes(n))) return true;
+  if (/\bpr\b/.test(textNorm) && !textNorm.includes("openpre")) return true;
+  if (textNorm.includes("marketing")) return true;
+  return false;
+}
+
+/** OpenAI-scoped terms for directed sentiment. */
+const OPENAI_DIRECT_TERMS = [
+  "openai",
+  "chatgpt",
+  "gpt-",
+  "gpt ",
+  "gpt3",
+  "gpt4",
+  "gpt5",
+  "o1",
+  "o3",
+  "o4",
   "sora",
+  "dall-e",
+  "dalle",
+  "codex",
   "sam altman",
 ];
-const ANTHROPIC_TERMS = [
+
+/** Anthropic-scoped terms for directed sentiment. */
+const ANTHROPIC_DIRECT_TERMS = [
   "anthropic",
   "claude",
   "opus",
@@ -26,33 +169,25 @@ const ANTHROPIC_TERMS = [
   "claude code",
 ];
 
-const BOOSTER_PHRASES = [
-  "game over",
-  "game changer",
-  "best model",
-  "unfair",
-  "monster",
-  "mind blowing",
-  "mind-blowing",
-  "insane",
-  "cooked",
-  "simply not serious",
-  "launch day",
-  "let's go",
-  "lets go",
-  "wow",
-  "shipping",
-];
+function mentionsOpenAIDirect(textNorm: string): boolean {
+  if (OPENAI_DIRECT_TERMS.some((t) => textNorm.includes(t))) return true;
+  if (/\bgpt\b/.test(textNorm)) return true;
+  if (/\bo1\b/.test(textNorm) || /\bo3\b/.test(textNorm) || /\bo4\b/.test(textNorm))
+    return true;
+  return false;
+}
 
-const NEGATIVE_PHRASES = [
-  "mid",
-  "overhyped",
-  "over-hyped",
-  "not impressed",
-  "meh",
-  "scam",
-  "vibes are off",
-];
+function mentionsAnthropicDirect(textNorm: string): boolean {
+  return ANTHROPIC_DIRECT_TERMS.some((t) => textNorm.includes(t));
+}
+
+function hasBooster(textNorm: string): number {
+  let n = 0;
+  for (const ph of BOOSTER_PHRASES) {
+    if (textNorm.includes(ph)) n += 1;
+  }
+  return Math.min(n, 3);
+}
 
 function clamp(n: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, n));
@@ -66,16 +201,8 @@ function normalizeText(s: string): string {
 function recencyWeight(createdAt: string, now: number): number {
   const t = new Date(createdAt).getTime();
   if (Number.isNaN(t)) return 0.5;
-  const days = (now - t) / (86400000);
+  const days = (now - t) / 86400000;
   return Math.exp(-days / 5);
-}
-
-function scoreTerms(textNorm: string, terms: string[]): number {
-  let s = 0;
-  for (const term of terms) {
-    if (textNorm.includes(term)) s += 1;
-  }
-  return s;
 }
 
 function truncate(s: string, max: number): string {
@@ -84,9 +211,43 @@ function truncate(s: string, max: number): string {
   return `${t.slice(0, max - 1)}…`;
 }
 
+function hasAiAnchor(textNorm: string): boolean {
+  if (LAB_NAMES_AI.some((x) => textNorm.includes(x))) return true;
+  if (MODEL_NAMES_AI.some((x) => textNorm.includes(x))) return true;
+  if (BROAD_AI_CONCEPTS.some((x) => textNorm.includes(x))) return true;
+  return false;
+}
+
+function hasHypeSignal(textNorm: string): boolean {
+  return HYPE_DOOM_SIGNALS.some((x) => textNorm.includes(x));
+}
+
+function isAiRelevantTweet(textNorm: string): boolean {
+  if (hasAiAnchor(textNorm)) return true;
+  /** Hype/doom counts as AI-relevant when paired with a generic "AI" mention. */
+  if (hasHypeSignal(textNorm) && /\bai\b/.test(textNorm)) return true;
+  return false;
+}
+
+/** Confidence ceiling from AI-post volume only. */
+function confidenceCapFromAiPosts(aiPosts: number): number {
+  if (aiPosts < 3) return 0.25;
+  if (aiPosts <= 9) return 0.55;
+  if (aiPosts <= 19) return 0.75;
+  return 0.95;
+}
+
 export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
   const { handle, posts, meta } = input;
   const now = Date.now();
+  const totalPosts = posts.length;
+
+  const emptyFields = {
+    totalPosts,
+    aiPosts: 0,
+    aiPct: 0,
+    postsAnalyzed: totalPosts,
+  };
 
   if (posts.length === 0) {
     return {
@@ -100,8 +261,8 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
         },
       ],
       tags: [],
-      vibeHeadline: "Schrodinger’s shitposter",
-      postsAnalyzed: 0,
+      vibeHeadline: "Schrodinger's shitposter",
+      ...emptyFields,
       meta,
     };
   }
@@ -112,77 +273,120 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
   const receipts: ScoreReceipt[] = [];
   const tagSet = new Set<string>();
 
+  let aiPosts = 0;
+  /** Per-AI-post lean for headline: which lab got more raw points from that post. */
+  let leanOpenCount = 0;
+  let leanAnthCount = 0;
+
+  const CROSS_WEIGHT = 0.6;
+  const BASE_POS = 10;
+  const BOOST_UNIT = 3;
+  const NEUTRAL_AI = 5;
+  const ONLY_ONE_LAB_MULT = 1.35;
+
   for (const p of posts) {
     const w = recencyWeight(p.createdAt, now);
     const textNorm = normalizeText(p.text);
-    const oHits = scoreTerms(textNorm, OPENAI_TERMS);
-    const aHits = scoreTerms(textNorm, ANTHROPIC_TERMS);
 
-    let booster = 0;
-    for (const ph of BOOSTER_PHRASES) {
-      if (textNorm.includes(ph)) booster += 1;
+    if (!isAiRelevantTweet(textNorm)) {
+      continue;
     }
 
-    let neg = 0;
-    for (const ph of NEGATIVE_PHRASES) {
-      if (textNorm.includes(ph)) neg += 1;
-    }
+    aiPosts += 1;
+
+    const openM = mentionsOpenAIDirect(textNorm);
+    const anthM = mentionsAnthropicDirect(textNorm);
+    const neg = hasStrongNegative(textNorm);
+    const boostN = hasBooster(textNorm);
+
+    let dOpen = 0;
+    let dAnth = 0;
+    let dNeut = 0;
 
     if (textNorm.includes("benchmark")) tagSet.add("benchmark glazing");
-    if (textNorm.includes("launch") && booster > 0) {
-      tagSet.add("launch-day activation");
-    }
-    if (
-      booster >= 2 &&
-      (textNorm.includes("drop") ||
-        textNorm.includes("shipping") ||
-        textNorm.includes("announcement"))
-    ) {
-      tagSet.add("marketing-copy tone");
-    }
-    if (
-      oHits + aHits < 1 &&
-      (textNorm.includes("side project") ||
-        textNorm.includes("indie") ||
-        textNorm.includes("locally"))
-    ) {
-      tagSet.add("indie poster");
+
+    const onlyOpen = openM && !anthM;
+    const onlyAnth = anthM && !openM;
+    const bothLabs = openM && anthM;
+
+    if (!openM && !anthM) {
+      dNeut += NEUTRAL_AI * w;
+    } else {
+      const onlyOneLabStrong =
+        (onlyOpen || onlyAnth) && hasHypeSignal(textNorm) && boostN > 0;
+
+      if (openM) {
+        if (neg) {
+          dAnth += CROSS_WEIGHT * BASE_POS * w;
+          dOpen += 0;
+        } else if (boostN > 0) {
+          dOpen +=
+            w *
+            BASE_POS *
+            (1 + boostN * (BOOST_UNIT / BASE_POS)) *
+            (onlyOneLabStrong && onlyOpen ? ONLY_ONE_LAB_MULT : 1);
+        } else {
+          dOpen += w * BASE_POS * 0.85 * (onlyOpen ? 1.1 : 0.95);
+        }
+      }
+
+      if (anthM) {
+        if (neg) {
+          dOpen += CROSS_WEIGHT * BASE_POS * w;
+          dAnth += 0;
+        } else if (boostN > 0) {
+          dAnth +=
+            w *
+            BASE_POS *
+            (1 + boostN * (BOOST_UNIT / BASE_POS)) *
+            (onlyOneLabStrong && onlyAnth ? ONLY_ONE_LAB_MULT : 1);
+        } else {
+          dAnth += w * BASE_POS * 0.85 * (onlyAnth ? 1.1 : 0.95);
+        }
+      }
+
+      if (bothLabs && !neg) {
+        dNeut += w * NEUTRAL_AI * 0.5;
+      }
+
+      const postOpen = Math.max(0, dOpen);
+      const postAnth = Math.max(0, dAnth);
+      const postNeut = Math.max(0, dNeut);
+      const eps = 0.01;
+      if (postOpen > postAnth + eps && postOpen > postNeut + eps) leanOpenCount += 1;
+      else if (postAnth > postOpen + eps && postAnth > postNeut + eps) leanAnthCount += 1;
     }
 
-    const openChunk =
-      w * (oHits * 8 + booster * 3 + (oHits > aHits ? 4 : 0) - neg * 2);
-    const anthropicChunk =
-      w * (aHits * 8 + booster * 3 + (aHits > oHits ? 4 : 0) - neg * 2);
-    const neutralChunk =
-      w *
-      (6 -
-        Math.min(oHits + aHits, 4) * 1.2 +
-        (oHits === 0 && aHits === 0 ? 5 : 0));
+    openAIPoints += Math.max(0, dOpen);
+    anthropicPoints += Math.max(0, dAnth);
+    neutralPoints += Math.max(0, dNeut);
 
-    openAIPoints += Math.max(0, openChunk);
-    anthropicPoints += Math.max(0, anthropicChunk);
-    neutralPoints += Math.max(0, neutralChunk);
-
-    if (receipts.length < 6 && (oHits > 0 || aHits > 0 || booster > 0)) {
+    if (receipts.length < 6) {
       const bits: string[] = [];
-      if (oHits) bits.push("OpenAI/GPT cues");
-      if (aHits) bits.push("Anthropic/Claude cues");
-      if (booster) bits.push("booster phrasing");
+      if (openM) bits.push("OpenAI/GPT signal");
+      if (anthM) bits.push("Anthropic/Claude signal");
+      if (neg) bits.push("negative tilt");
+      if (boostN) bits.push("booster phrasing");
+      if (bits.length === 0) bits.push("general AI");
       receipts.push({
-        reason: bits.join(" · ") || "tone",
+        reason: bits.join(" · "),
         text: truncate(p.text, 140),
       });
     }
   }
 
+  const aiPct =
+    totalPosts > 0 ? Math.round(((1000 * aiPosts) / totalPosts)) / 10 : 0;
+
   let o = openAIPoints;
   let a = anthropicPoints;
   let n = neutralPoints;
   const sum = o + a + n;
-  if (sum < 1) {
-    o = 1;
-    a = 1;
-    n = 1;
+
+  if (aiPosts === 0 || sum < 1e-6) {
+    o = 34;
+    a = 33;
+    n = 33;
   } else {
     o = (o / sum) * 100;
     a = (a / sum) * 100;
@@ -196,18 +400,48 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
   n = round2(clamp(n, 0, 100));
 
   const dominantDelta = Math.abs(o - a);
-  let vibeHeadline = "Chaos neutral reply guy";
-  if (o > a + 8 && o > n) vibeHeadline = "OpenAI-coded posting reflex";
-  else if (a > o + 8 && a > n) vibeHeadline = "Anthropic-coded posting reflex";
-  else if (n >= o && n >= a) vibeHeadline = "Independent / lab-agnostic poster";
 
+  const shareOpen = aiPosts > 0 ? leanOpenCount / aiPosts : 0;
+  const shareAnth = aiPosts > 0 ? leanAnthCount / aiPosts : 0;
+
+  let vibeHeadline = "Chaos neutral reply guy";
+
+  if (aiPct < 5 && totalPosts >= 3) {
+    vibeHeadline = "Terminally offline (AI-wise)";
+  } else if (aiPosts > 0) {
+    const highEngagement = aiPosts >= 10;
+    const balanced = dominantDelta < 12;
+
+    if (shareOpen > 0.6 && o > a) {
+      vibeHeadline = "Signed, sealed, Sam-pilled";
+    } else if (shareOpen >= 0.4 && shareOpen <= 0.6 && o >= a) {
+      vibeHeadline = "OpenAI-coded posting reflex";
+    } else if (shareAnth > 0.6 && a > o) {
+      vibeHeadline = "Constitutional AI enjoyer";
+    } else if (shareAnth >= 0.4 && shareAnth <= 0.6 && a >= o) {
+      vibeHeadline = "Anthropic-coded posting reflex";
+    } else if (highEngagement && balanced) {
+      vibeHeadline = "Both-sides AI maximalist";
+    } else if (aiPct >= 40 && balanced) {
+      vibeHeadline = "Chronically online, diplomatically neutral";
+    } else if (o > a + 8 && o > n) {
+      vibeHeadline = "Signed, sealed, Sam-pilled";
+    } else if (a > o + 8 && a > n) {
+      vibeHeadline = "Constitutional AI enjoyer";
+    }
+  }
+
+  const cap = confidenceCapFromAiPosts(aiPosts);
   const evidenceStrength =
-    posts.reduce((acc, p) => acc + recencyWeight(p.createdAt, now), 0) /
-    posts.length;
+    aiPosts > 0
+      ? posts
+          .filter((p) => isAiRelevantTweet(normalizeText(p.text)))
+          .reduce((acc, p) => acc + recencyWeight(p.createdAt, now), 0) / aiPosts
+      : 0;
   const rawConf =
-    clamp(evidenceStrength, 0.2, 1) *
-    clamp(0.35 + dominantDelta / 100 + posts.length * 0.04, 0, 1);
-  const confidence = round2(clamp(rawConf, 0.05, 0.98));
+    clamp(evidenceStrength, 0.15, 1) *
+    clamp(0.25 + dominantDelta / 120 + aiPosts * 0.035, 0, 1);
+  const confidence = round2(clamp(Math.min(rawConf, cap), 0.05, cap));
 
   const topReceipts = receipts.slice(0, 5);
   while (topReceipts.length < 3) {
@@ -224,7 +458,10 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
     receipts: topReceipts.slice(0, 5),
     tags: Array.from(tagSet).slice(0, 5),
     vibeHeadline,
-    postsAnalyzed: posts.length,
+    postsAnalyzed: totalPosts,
+    totalPosts,
+    aiPosts,
+    aiPct,
     meta,
   };
 }

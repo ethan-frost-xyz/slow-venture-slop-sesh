@@ -28,6 +28,12 @@ export type SlopScoreResult = {
   vibeHeadline: string;
   /** Posts analyzed count */
   postsAnalyzed: number;
+  /** Total tweets considered for scoring volume */
+  totalPosts: number;
+  /** Count of tweets classified as AI-relevant */
+  aiPosts: number;
+  /** Share of tweets that were AI-relevant (0–100, one decimal) */
+  aiPct: number;
   meta: PostsFetchMeta;
 };
 
