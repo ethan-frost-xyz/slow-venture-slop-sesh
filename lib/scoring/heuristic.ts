@@ -15,23 +15,8 @@ const LAB_NAMES_AI = [
   "grok",
 ];
 
-const MODEL_NAMES_AI = [
-  "gpt",
-  "chatgpt",
-  "claude",
-  "opus",
-  "sonnet",
-  "haiku",
-  "gemini",
-  "llama",
-  "grok",
-  "o1",
-  "o3",
-  "o4",
-  "sora",
-  "dall-e",
-  "dalle",
-];
+/** Vendor-neutral model names only — OpenAI/Anthropic terms live in *_DIRECT_TERMS. */
+const MODEL_NAMES_AI = ["gemini", "llama", "grok"];
 
 const BROAD_AI_CONCEPTS = [
   "llm",
@@ -61,8 +46,6 @@ const BROAD_AI_CONCEPTS = [
   "vibe coding",
   "cursor",
   "copilot",
-  "claude code",
-  "codex",
   "ai lab",
   "frontier model",
   "frontier lab",
@@ -139,7 +122,7 @@ function hasStrongNegative(textNorm: string): boolean {
   return false;
 }
 
-/** OpenAI-scoped terms for directed sentiment. */
+/** OpenAI-scoped terms for directed sentiment and AI relevance (exclusive vs broad bucket). */
 const OPENAI_DIRECT_TERMS = [
   "openai",
   "chatgpt",
@@ -148,43 +131,82 @@ const OPENAI_DIRECT_TERMS = [
   "gpt3",
   "gpt4",
   "gpt5",
+  "gpt-4o",
+  "gpt4o",
+  "gpt-4.1",
+  "gpt-5",
+  "gpt-5.1",
+  "gpt-5.2",
+  "gpt-5.3",
+  "gpt-5.4",
+  "gpt-5.5",
+  "gpt-5-nano",
+  "gpt-5-pro",
+  "gpt-5.5-pro",
+  "gpt-5.4-mini",
+  "gpt-5-mini",
   "o1",
   "o3",
   "o4",
-  "sora",
-  "dall-e",
-  "dalle",
-  "codex",
-  "openai codex",
+  "o1-pro",
   "o3-mini",
   "o4-mini",
   "o3 mini",
   "o4 mini",
+  "o3-deep-research",
+  "o4-mini-deep-research",
+  "o3 deep research",
+  "o4-mini deep research",
+  "sora",
+  "sora 2",
+  "sora 3",
+  "sora-2",
+  "sora 2 pro",
+  "sora-2-pro",
+  "dall-e",
+  "dalle",
+  "codex",
+  "codex-1",
+  "codex cli",
+  "openai codex",
+  "@codex",
+  "gpt-5-codex",
+  "gpt-5.4-codex",
+  "gpt-5-codex-mini",
+  "gpt-5.1-codex",
+  "codex-mini-latest",
   "chatgpt pro",
   "chatgpt plus",
+  "chatgpt business",
+  "chatgpt enterprise",
   "operator",
   "deep research",
   "canvas",
-  "gpt-4o",
-  "gpt4o",
   "realtime api",
+  "gpt-realtime",
+  "gpt-audio",
   "assistants api",
-  "sora 2",
-  "sora 3",
+  "responses api",
   "openai projects",
   "sam altman",
 ];
 
-/** Anthropic-scoped terms for directed sentiment. */
+/** Anthropic-scoped terms for directed sentiment and AI relevance (exclusive vs broad bucket). */
 const ANTHROPIC_DIRECT_TERMS = [
   "anthropic",
+  "anthropic api",
+  "claude api",
   "claude",
+  "claude.ai",
   "opus",
   "sonnet",
   "haiku",
+  "opusplan",
+  "opus[1m]",
+  "sonnet[1m]",
   "constitutional ai",
   "claude code",
-  "claude.ai",
+  "ultrareview",
   "claude cowork",
   "claude projects",
   "computer use",
@@ -196,6 +218,12 @@ const ANTHROPIC_DIRECT_TERMS = [
   "claude opus",
   "claude sonnet",
   "claude haiku",
+  "claude-opus-4-7",
+  "claude-sonnet-4-6",
+  "claude-haiku-4-5",
+  "claude-opus-4-6",
+  "claude-sonnet-4-5",
+  "claude-opus-4-5",
   "opus 4",
   "sonnet 4",
   "haiku 4",
@@ -220,6 +248,26 @@ function mentionsOpenAIDirect(textNorm: string): boolean {
 
 function mentionsAnthropicDirect(textNorm: string): boolean {
   return ANTHROPIC_DIRECT_TERMS.some((t) => textNorm.includes(t));
+}
+
+function hasAiAnchor(textNorm: string): boolean {
+  if (LAB_NAMES_AI.some((x) => textNorm.includes(x))) return true;
+  if (MODEL_NAMES_AI.some((x) => textNorm.includes(x))) return true;
+  if (BROAD_AI_CONCEPTS.some((x) => textNorm.includes(x))) return true;
+  if (mentionsOpenAIDirect(textNorm)) return true;
+  if (mentionsAnthropicDirect(textNorm)) return true;
+  return false;
+}
+
+function hasHypeSignal(textNorm: string): boolean {
+  return HYPE_DOOM_SIGNALS.some((x) => textNorm.includes(x));
+}
+
+function isAiRelevantTweet(textNorm: string): boolean {
+  if (hasAiAnchor(textNorm)) return true;
+  /** Hype/doom counts as AI-relevant when paired with a generic "AI" mention. */
+  if (hasHypeSignal(textNorm) && /\bai\b/.test(textNorm)) return true;
+  return false;
 }
 
 function extractVersionSignals(textNorm: string): {
@@ -278,24 +326,6 @@ function publicPostUrl(handle: string, postId: string): string {
   const h = encodeURIComponent(handle);
   const id = encodeURIComponent(postId);
   return `https://x.com/${h}/status/${id}`;
-}
-
-function hasAiAnchor(textNorm: string): boolean {
-  if (LAB_NAMES_AI.some((x) => textNorm.includes(x))) return true;
-  if (MODEL_NAMES_AI.some((x) => textNorm.includes(x))) return true;
-  if (BROAD_AI_CONCEPTS.some((x) => textNorm.includes(x))) return true;
-  return false;
-}
-
-function hasHypeSignal(textNorm: string): boolean {
-  return HYPE_DOOM_SIGNALS.some((x) => textNorm.includes(x));
-}
-
-function isAiRelevantTweet(textNorm: string): boolean {
-  if (hasAiAnchor(textNorm)) return true;
-  /** Hype/doom counts as AI-relevant when paired with a generic "AI" mention. */
-  if (hasHypeSignal(textNorm) && /\bai\b/.test(textNorm)) return true;
-  return false;
 }
 
 /** Confidence ceiling from AI-post volume only. */
