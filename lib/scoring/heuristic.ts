@@ -385,6 +385,22 @@ function sortReceiptsByCreatedAtDesc(receipts: ScoreReceipt[]): ScoreReceipt[] {
   });
 }
 
+const RECEIPTS_SHOWN = 20;
+
+/** Keep ambiguous (toss-up) receipts so /api/referee always receives them when toss-up mass > 0. */
+function sliceReceiptsPrioritizingTossUp(
+  receipts: ScoreReceipt[],
+  limit: number,
+): ScoreReceipt[] {
+  const sorted = sortReceiptsByCreatedAtDesc(receipts);
+  const tossUps = sorted.filter((r) => r.isTossUpContributor === true);
+  const others = sorted.filter((r) => r.isTossUpContributor !== true);
+  if (tossUps.length >= limit) {
+    return tossUps.slice(0, limit);
+  }
+  return [...tossUps, ...others.slice(0, limit - tossUps.length)];
+}
+
 function publicPostUrl(handle: string, postId: string): string {
   const h = encodeURIComponent(handle);
   const id = encodeURIComponent(postId);
@@ -596,7 +612,7 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
     handle,
     ...(displayName ? { displayName } : {}),
     scores: { openAI: o, anthropic: a, tossUp: t },
-    receipts: sortedReceipts.slice(0, 20),
+    receipts: sliceReceiptsPrioritizingTossUp(sortedReceipts, RECEIPTS_SHOWN),
     tags: Array.from(tagSet).slice(0, 5),
     vibeHeadline,
     postsAnalyzed: totalPosts,

@@ -69,7 +69,8 @@ export function ResultCard({ result }: Props) {
           ? "Cached posts"
           : "Fallback sample";
 
-  const showRefereeButton = scores.tossUp > 0;
+  const showRefereeButton =
+    scores.tossUp > 0 && receipts.some((r) => r.isTossUpContributor === true);
   const displayScores = refereeScores ?? scores;
 
   async function letGrokDecide() {
@@ -206,6 +207,56 @@ export function ResultCard({ result }: Props) {
             <ScorePill label="OpenAI-coded" value={scores.openAI} tone="openai" />
           </div>
         )}
+        {showRefereeButton ? (
+          <div className="flex flex-col items-center gap-2 border-t border-border/50 pt-4">
+            {refereeScores ? (
+              <div className="flex flex-col items-center gap-1.5 text-center">
+                <p className="max-w-sm text-sm text-muted-foreground">
+                  Grok already ran on this card. Reset to see heuristic-only scores, then you can
+                  run Grok again.
+                </p>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-auto min-h-0 py-1.5 text-muted-foreground hover:text-foreground"
+                  onClick={() => {
+                    setRefereeScores(null);
+                    setGrokRecap(null);
+                    setRefereeError(null);
+                  }}
+                >
+                  Reset Grok · back to heuristic-only
+                </Button>
+              </div>
+            ) : (
+              <Button
+                type="button"
+                className="min-w-[12rem] animate-in fade-in duration-300 motion-safe:transition-[transform,box-shadow] motion-safe:duration-200 motion-safe:ease-out motion-safe:hover:-translate-y-0.5 motion-safe:hover:shadow-lg motion-safe:active:translate-y-px motion-safe:active:shadow-sm gap-2"
+                disabled={refereeLoading}
+                aria-busy={refereeLoading}
+                onClick={letGrokDecide}
+              >
+                {refereeLoading ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" aria-hidden />
+                    Grok is deciding…
+                  </>
+                ) : (
+                  "Let Grok Cook"
+                )}
+              </Button>
+            )}
+            {grokRecap ? (
+              <div className="w-full max-w-prose rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5 text-left">
+                <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Why the score shifted
+                </p>
+                <p className="mt-1.5 text-sm leading-snug text-foreground">{grokRecap}</p>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
         {tags.length > 0 ? (
           <div className="flex flex-wrap justify-center gap-2">
             {tags.map((t) => (
@@ -217,36 +268,6 @@ export function ResultCard({ result }: Props) {
                 {t}
               </Badge>
             ))}
-          </div>
-        ) : null}
-        {showRefereeButton ? (
-          <div className="flex flex-col items-center gap-2 border-t border-border/50 pt-4">
-            <Button
-              type="button"
-              className="min-w-[12rem] animate-in fade-in duration-300 motion-safe:transition-[transform,box-shadow] motion-safe:duration-200 motion-safe:ease-out motion-safe:hover:-translate-y-0.5 motion-safe:hover:shadow-lg motion-safe:active:translate-y-px motion-safe:active:shadow-sm gap-2"
-              disabled={refereeLoading || refereeScores !== null}
-              aria-busy={refereeLoading}
-              onClick={letGrokDecide}
-            >
-              {refereeLoading ? (
-                <>
-                  <Loader2 className="size-4 animate-spin" aria-hidden />
-                  Grok is deciding…
-                </>
-              ) : refereeScores ? (
-                "Grok decided"
-              ) : (
-                "Let Grok decide"
-              )}
-            </Button>
-            {grokRecap ? (
-              <div className="w-full max-w-prose rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5 text-left">
-                <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-muted-foreground">
-                  Why the score shifted
-                </p>
-                <p className="mt-1.5 text-sm leading-snug text-foreground">{grokRecap}</p>
-              </div>
-            ) : null}
           </div>
         ) : null}
         <div>
