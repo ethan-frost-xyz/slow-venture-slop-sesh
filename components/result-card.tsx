@@ -125,7 +125,7 @@ export function ResultCard({ result }: Props) {
     <Card className="relative border-border/80 shadow-lg shadow-black/20 ring-2 ring-foreground/5">
       <Badge
         variant="secondary"
-        className="absolute top-4 right-4 z-10 h-auto min-h-0 max-w-[calc(100%-2rem)] flex-col items-end justify-center gap-1 py-2 text-right font-mono text-sm font-medium leading-tight whitespace-normal sm:max-w-[min(100%-2rem,12rem)]"
+        className="absolute top-2 right-2 z-10 h-auto min-h-0 max-w-[calc(100%-1rem)] flex-col items-end justify-center gap-1 py-2 text-right font-mono text-sm font-medium leading-tight whitespace-normal sm:max-w-[min(100%-1rem,12rem)]"
       >
         <span className="whitespace-nowrap">{sourceLabel}</span>
         <span className="text-xs font-normal leading-snug whitespace-nowrap text-muted-foreground">
@@ -145,7 +145,7 @@ export function ResultCard({ result }: Props) {
             )}
           </CardTitle>
         </div>
-        <div className="w-full space-y-3 text-center sm:space-y-4">
+        <div className="mt-2 w-full space-y-3 text-center sm:mt-3 sm:space-y-4">
           <p className="text-xl font-bold uppercase tracking-wide text-primary sm:text-2xl">
             Slop alignment score
           </p>
