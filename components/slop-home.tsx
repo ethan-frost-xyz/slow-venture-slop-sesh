@@ -21,7 +21,7 @@ export function SlopHome() {
   const runScore = useCallback(async (raw: string) => {
     const h = raw.trim().replace(/^@+/, "");
     if (!h) {
-      setError("Enter a handle—or tap a demo account.");
+      setError("Enter a profile handle—or tap a demo below.");
       setResult(null);
       return;
     }
@@ -59,16 +59,16 @@ export function SlopHome() {
             Slop Sentiment Index
           </p>
           <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight sm:text-4xl">
-            How{" "}
             <span className="bg-gradient-to-r from-emerald-600 to-orange-500 bg-clip-text text-transparent">
-              lab-coded
+              Slop alignment
             </span>{" "}
-            is your timeline?
+            score for a profile
           </h1>
           <p className="mx-auto mt-3 max-w-lg text-sm text-muted-foreground sm:text-base">
-            Enter a public X handle. We score{" "}
-            <strong>posting-style similarity</strong> to OpenAI-coded vs
-            Anthropic-coded hype—not employment, bribery, or sponsorship.
+            Enter a public X handle to review that profile’s{" "}
+            <strong>slop alignment score</strong>—how their posts resemble
+            OpenAI-coded vs Anthropic-coded hype vs neutral/indie tone. Not
+            employment, bribery, or sponsorship.
           </p>
         </div>
       </header>
@@ -116,8 +116,8 @@ export function SlopHome() {
         !error &&
         !touched ? (
           <StateMessage
-            title="Waiting for your first specimen"
-            description="Try @gpt_hype_architect, @claude_maximalist, or @indieposter_9000 — or roll your own handle and we’ll mock it if X is being X."
+            title="Pick a profile to review"
+            description="Try a demo profile below (@gpt_hype_architect, @claude_maximalist, @indieposter_9000) or enter any handle—we’ll mock or fall back if live X is unavailable."
           />
         ) : null}
       </main>

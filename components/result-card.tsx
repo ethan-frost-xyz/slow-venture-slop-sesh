@@ -34,7 +34,7 @@ export function ResultCard({ result }: Props) {
               @{result.handle}
             </CardTitle>
             <CardDescription className="mt-1 max-w-prose">
-              {vibeHeadline} · posting-style similarity only
+              {vibeHeadline} · slop alignment (posting-style similarity only)
             </CardDescription>
           </div>
           <Badge variant="secondary" className="shrink-0 font-mono text-xs">
@@ -44,6 +44,9 @@ export function ResultCard({ result }: Props) {
         <ScoreSpectrum openAI={scores.openAI} anthropic={scores.anthropic} />
       </CardHeader>
       <CardContent className="space-y-5 pt-2">
+        <p className="text-center text-[0.7rem] font-semibold uppercase tracking-wider text-muted-foreground">
+          Slop alignment score (breakdown)
+        </p>
         <div className="grid grid-cols-3 gap-3 text-center sm:gap-4">
           <ScorePill label="OpenAI-coded" value={scores.openAI} tone="openai" />
           <ScorePill label="Anthropic-coded" value={scores.anthropic} tone="anthropic" />
@@ -96,9 +99,9 @@ export function ResultCard({ result }: Props) {
       </CardContent>
       <CardFooter className="flex flex-col gap-2 border-t border-border/60 text-center text-xs text-muted-foreground">
         <p>
-          Parody index. Not evidence of who pays you, who employs you, or who you
-          stan IRL—just how your public posts rhyme with &ldquo;lab launch
-          thread&rdquo; culture.
+          Parody index. Not evidence of who pays them, who employs them, or who
+          they stan IRL—just how this profile&rsquo;s public posts rhyme with
+          &ldquo;lab launch thread&rdquo; culture.
         </p>
         {meta.detail ? (
           <p className="font-mono text-[0.65rem] opacity-80">{meta.detail}</p>

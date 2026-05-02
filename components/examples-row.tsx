@@ -10,7 +10,7 @@ export function ExamplesRow({ onPick, disabled }: Props) {
   return (
     <div className="flex flex-col gap-2">
       <p className="text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">
-        Demo accounts (always work offline)
+        Demo profiles (always work offline)
       </p>
       <div className="flex flex-wrap justify-center gap-2">
         {DEMO_ACCOUNTS.map((d) => (

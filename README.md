@@ -1,12 +1,12 @@
 # Slop Sentiment Index
 
-Hackathon MVP: a **parody** “posting-style similarity” score for public X handles—**OpenAI-coded** vs **Anthropic-coded** hype vs **neutral/indie** vibes. **Not** employment, compensation, affiliation, bribery, or paid promotion detection.
+Hackathon MVP: review **specific X profiles** and see each profile’s **slop alignment score**—a parody breakdown of **OpenAI-coded** vs **Anthropic-coded** vs **neutral/indie** posting-style similarity. **Not** employment, compensation, affiliation, bribery, or paid promotion detection.
 
 ## Quick demo (60s)
 
 1. `npm install` (if needed) then `npm run dev`
 2. Open [http://localhost:3000](http://localhost:3000)
-3. Click a demo handle:
+3. Click a demo profile:
    - `@gpt_hype_architect`
    - `@claude_maximalist`
    - `@indieposter_9000`
@@ -48,4 +48,4 @@ If the live request fails or returns an empty timeline, the app still returns sc
 
 ## Product guardrails
 
-Copy in the UI states this is **entertainment**: similarity of tone to common “lab launch thread” shapes, not proof of who someone works for or is paid by.
+Copy in the UI states this is **entertainment**: a profile’s **slop alignment score** reflects similarity of tone to common “lab launch thread” shapes—not proof of who someone works for or is paid by.

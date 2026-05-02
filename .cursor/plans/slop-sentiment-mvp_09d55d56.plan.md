@@ -1,6 +1,6 @@
 ---
 name: slop-sentiment-mvp
-overview: "Build a reliable 8-hour hackathon MVP for Slop Sentiment Index: a single-page Next.js app that scores an X handle against OpenAI-coded, Anthropic-coded, and neutral posting-style vibes using mock data first and a provider interface for live X data later."
+overview: "Build a reliable 8-hour hackathon MVP for Slop Sentiment Index: a single-page Next.js app where users review specific X profiles and see each profile’s slop alignment score (OpenAI-coded vs Anthropic-coded vs neutral), using mock data first and a provider interface for live X data later."
 todos:
   - id: scaffold-foundation
     content: Scaffold the Next.js, TypeScript, Tailwind, and shadcn/ui foundation.
@@ -27,7 +27,7 @@ isProject: false
 Ship a demo-ready entertainment app that works even without X API access.
 
 Core MVP:
-- Single-page web app with hero, X handle input, mocked example buttons, loading/error/empty states, and a screenshot-worthy result card.
+- Single-page web app with hero, X handle input for **profile review**, mocked example profile buttons, loading/error/empty states, and a screenshot-worthy result card showing **slop alignment score** and breakdown.
 - API endpoint that accepts a handle and returns typed scoring output.
 - Mock/demo provider with at least 3 sample accounts so the app works immediately.
 - Provider abstraction for post ingestion so live X fetching can be added later without touching UI/scoring contracts.
@@ -38,7 +38,7 @@ Core MVP:
   - Confidence score
   - 3 to 5 humorous receipts
   - Optional tags when obvious, such as `launch-day activation`, `benchmark glazing`, `marketing-copy tone`, `indie poster`
-- Product language consistently frames results as posting-style similarity / lab vibe alignment, not factual affiliation, bribery, employment, or paid promotion.
+- Product language consistently frames results as **per-profile slop alignment** (posting-style similarity to lab-hype shapes), not factual affiliation, bribery, employment, or paid promotion.
 
 Out of scope for 8-hour MVP:
 - Auth, database, account history persistence, payments, sharing backend, or user profiles.
@@ -61,7 +61,7 @@ Simple request flow:
 
 ```mermaid
 flowchart LR
-  User[User enters handle] --> HomePage[Next.js homepage]
+  User[User picks a profile] --> HomePage[Next.js homepage]
   HomePage --> ScoreApi[POST api score]
   ScoreApi --> Provider[Post provider interface]
   Provider --> MockProvider[Mock posts now]
@@ -156,5 +156,5 @@ Fallback plan:
 - Default to mock provider for all demos.
 - Keep real X provider as a clean stub or optional adapter only.
 - Use deterministic heuristic scoring for the MVP; add LLM only if the core demo is already stable.
-- Put a clear product disclaimer in the UI and README: this is a satirical posting-style similarity score, not evidence of employment, payment, affiliation, or promotion.
-- Make example buttons the primary demo path so the app demos reliably in under 60 seconds.
+- Put a clear product disclaimer in the UI and README: this is a satirical **slop alignment score** (posting-style similarity), not evidence of employment, payment, affiliation, or promotion.
+- Make example profile buttons the primary demo path so the app demos reliably in under 60 seconds.

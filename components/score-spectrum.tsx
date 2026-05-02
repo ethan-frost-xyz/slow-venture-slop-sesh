@@ -6,7 +6,7 @@ type Props = {
   className?: string;
 };
 
-/** Horizontal “lab vibe” axis: Anthropic-coded ← → OpenAI-coded */
+/** Profile slop alignment on the Anthropic-coded ← → OpenAI-coded axis */
 export function ScoreSpectrum({ openAI, anthropic, className }: Props) {
   const delta = openAI - anthropic;
   const position = Math.min(100, Math.max(0, 50 + delta / 2));
@@ -29,11 +29,12 @@ export function ScoreSpectrum({ openAI, anthropic, className }: Props) {
         <div
           className="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background bg-foreground shadow-md"
           style={{ left: `${position}%` }}
-          title="Posting-style lean (not affiliation)"
+          title="Profile slop alignment on this axis (not affiliation)"
         />
       </div>
       <p className="text-center text-xs text-muted-foreground">
-        Pointer = similarity of tone to common lab-hype shapes · not employment
+        Pointer = where this profile sits vs common lab-hype post shapes · not
+        employment
       </p>
     </div>
   );

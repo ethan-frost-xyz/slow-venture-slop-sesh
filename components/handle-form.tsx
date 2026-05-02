@@ -33,7 +33,7 @@ export function HandleForm({ value, onChange, onSubmit, disabled }: Props) {
         />
       </div>
       <Button type="submit" disabled={disabled} className="shrink-0 sm:h-8">
-        Run the index
+        Score profile
       </Button>
     </form>
   );
