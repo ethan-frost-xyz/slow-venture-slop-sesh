@@ -24,6 +24,7 @@ export async function resolvePostsForHandle(
         source: "cache",
         cachedAt: cached.fetchedAt,
         detail: cached.source,
+        ...(cached.displayName ? { displayName: cached.displayName } : {}),
       },
     };
   }
@@ -44,7 +45,12 @@ export async function resolvePostsForHandle(
   for (const p of providers) {
     const result = await p.fetchPosts(handle);
     if (result.ok && result.posts.length > 0) {
-      setCache(handle, result.posts, result.meta.source);
+      setCache(
+        handle,
+        result.posts,
+        result.meta.source,
+        result.meta.displayName,
+      );
       return result;
     }
     if (!result.ok) {
@@ -57,7 +63,12 @@ export async function resolvePostsForHandle(
   const mockResult = await mock.fetchPosts(handle);
   if (mockResult.ok) {
     if (mockResult.posts.length > 0) {
-      setCache(handle, mockResult.posts, mockResult.meta.source);
+      setCache(
+        handle,
+        mockResult.posts,
+        mockResult.meta.source,
+        mockResult.meta.displayName,
+      );
     }
     return {
       ...mockResult,

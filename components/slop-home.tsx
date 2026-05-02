@@ -54,11 +54,8 @@ export function SlopHome() {
     <div className="flex min-h-0 flex-1 flex-col">
       <header className="border-b border-border px-4 py-5 sm:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.25em] text-muted-foreground">
-            Slop Sentiment Index
-          </p>
-          <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-            Slop alignment score for a profile
+          <h1 className="font-heading text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+            Slop Sentiment Score
           </h1>
           <p className="mx-auto mt-3 max-w-lg text-sm text-muted-foreground sm:text-base">
             there was a bunch of slop here and idk what to put and ran out of

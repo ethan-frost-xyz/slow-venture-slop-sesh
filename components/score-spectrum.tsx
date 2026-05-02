@@ -3,11 +3,12 @@ import { cn } from "@/lib/utils";
 type Props = {
   openAI: number;
   anthropic: number;
+  caption: string;
   className?: string;
 };
 
 /** Profile slop alignment on the Anthropic-coded ← → OpenAI-coded axis */
-export function ScoreSpectrum({ openAI, anthropic, className }: Props) {
+export function ScoreSpectrum({ openAI, anthropic, caption, className }: Props) {
   const delta = openAI - anthropic;
   const position = Math.min(100, Math.max(0, 50 + delta / 2));
 
@@ -21,12 +22,10 @@ export function ScoreSpectrum({ openAI, anthropic, className }: Props) {
         <div
           className="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background bg-foreground shadow-md"
           style={{ left: `${position}%` }}
-          title="Profile slop alignment on this axis (not affiliation)"
+          title="Slop alignment on this axis"
         />
       </div>
-      <p className="text-center text-xs text-muted-foreground">
-        Not employment or affiliation.
-      </p>
+      <p className="text-center text-xs text-muted-foreground">{caption}</p>
     </div>
   );
 }

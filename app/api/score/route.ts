@@ -31,12 +31,10 @@ export async function POST(request: Request) {
 
   const scored = scoreSlopVibes({
     handle: normalizeHandle(handle),
+    displayName: fetchResult.meta.displayName,
     posts: fetchResult.posts,
     meta: fetchResult.meta,
   });
-
-  // TEMP: local debugging — remove before shipping
-  console.log(JSON.stringify(scored, null, 2));
 
   return NextResponse.json(scored);
 }

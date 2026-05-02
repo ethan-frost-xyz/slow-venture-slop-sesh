@@ -15,6 +15,8 @@ export type PostsFetchMeta = {
   detail?: string;
   /** Epoch ms when a cached bundle was stored */
   cachedAt?: number;
+  /** Profile display name from the platform when available */
+  displayName?: string;
 };
 
 export type PostsFetchResult =

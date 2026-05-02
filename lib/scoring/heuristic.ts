@@ -307,7 +307,7 @@ function confidenceCapFromAiPosts(aiPosts: number): number {
 }
 
 export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
-  const { handle, posts, meta } = input;
+  const { handle, displayName, posts, meta } = input;
   const now = Date.now();
   const totalPosts = posts.length;
 
@@ -321,6 +321,7 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
   if (posts.length === 0) {
     return {
       handle,
+      ...(displayName ? { displayName } : {}),
       scores: { openAI: 34, anthropic: 33, neutral: 33 },
       confidence: 0.05,
       receipts: [
@@ -441,9 +442,6 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
       if (neg && (openMFinal || anthMFinal))
         bits.push("negative → cross-lab boost");
       if (boostN > 0) bits.push("booster phrasing");
-      if (p.likeCount != null && p.likeCount >= 100) {
-        bits.push(`${p.likeCount.toLocaleString()} likes`);
-      }
       if (hasHypeSignal(textNorm) && !openM && !anthM) bits.push("hype only");
       if (bits.length === 0) bits.push("general AI");
       receipts.push({
@@ -451,6 +449,7 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
         text: truncate(p.text, 140),
         createdAt: p.createdAt,
         postUrl: publicPostUrl(handle, p.id),
+        ...(typeof p.likeCount === "number" ? { likeCount: p.likeCount } : {}),
       });
     }
   }
@@ -552,6 +551,7 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
 
   return {
     handle,
+    ...(displayName ? { displayName } : {}),
     scores: { openAI: o, anthropic: a, neutral: n },
     confidence,
     receipts: orderedReceipts.slice(0, 15),

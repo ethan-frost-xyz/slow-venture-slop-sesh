@@ -2,7 +2,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -15,41 +14,40 @@ type Props = {
 };
 
 export function ResultCard({ result }: Props) {
-  const { scores, receipts, tags, vibeHeadline, meta } = result;
-
-  const sourceLabel =
-    meta.source === "live"
-      ? "Live posts"
-      : meta.source === "mock"
-        ? "Sample posts"
-        : "Fallback sample";
+  const { scores, receipts, tags, vibeHeadline, meta, displayName, handle } =
+    result;
 
   return (
     <Card className="border-border/80 shadow-lg shadow-black/20 ring-2 ring-foreground/5">
       <CardHeader className="border-b border-border/60 pb-4">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <CardTitle className="text-lg sm:text-xl">
-              @{result.handle}
-            </CardTitle>
-            <CardDescription className="mt-1 max-w-prose">
-              {vibeHeadline} · slop alignment (posting-style similarity only)
-            </CardDescription>
-          </div>
-          <Badge variant="secondary" className="shrink-0 font-mono text-xs">
-            {sourceLabel}
-          </Badge>
+        <div>
+          <CardTitle className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-lg sm:text-xl">
+            {displayName ? (
+              <>
+                <span>{displayName}</span>
+                <span className="font-normal text-muted-foreground">
+                  @{handle}
+                </span>
+              </>
+            ) : (
+              <span>@{handle}</span>
+            )}
+          </CardTitle>
         </div>
-        <ScoreSpectrum openAI={scores.openAI} anthropic={scores.anthropic} />
+        <ScoreSpectrum
+          openAI={scores.openAI}
+          anthropic={scores.anthropic}
+          caption={`${vibeHeadline} · slop alignment (posting-style similarity only)`}
+        />
       </CardHeader>
       <CardContent className="space-y-5 pt-2">
-        <p className="text-center text-[0.7rem] font-semibold uppercase tracking-wider text-muted-foreground">
+        <p className="text-center text-sm font-semibold uppercase tracking-wider text-muted-foreground sm:text-base">
           Slop alignment score (breakdown)
         </p>
         <div className="grid grid-cols-3 gap-3 text-center sm:gap-4">
-          <ScorePill label="OpenAI-coded" value={scores.openAI} tone="openai" />
           <ScorePill label="Anthropic-coded" value={scores.anthropic} tone="anthropic" />
           <ScorePill label="Neutral / indie" value={scores.neutral} tone="neutral" />
+          <ScorePill label="OpenAI-coded" value={scores.openAI} tone="openai" />
         </div>
         {tags.length > 0 ? (
           <div className="flex flex-wrap justify-center gap-2">
@@ -76,6 +74,11 @@ export function ResultCard({ result }: Props) {
               >
                 <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
                   <span className="text-xs text-muted-foreground">{r.reason}</span>
+                  {typeof r.likeCount === "number" ? (
+                    <span className="text-xs text-muted-foreground">
+                      · {r.likeCount.toLocaleString()} likes
+                    </span>
+                  ) : null}
                   {r.createdAt ? (
                     <time
                       className="text-[0.65rem] font-mono text-muted-foreground"
@@ -87,18 +90,18 @@ export function ResultCard({ result }: Props) {
                       })}
                     </time>
                   ) : null}
-                  {r.postUrl ? (
-                    <a
-                      href={r.postUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[0.65rem] font-medium text-primary underline-offset-2 hover:underline"
-                    >
-                      Open post
-                    </a>
-                  ) : null}
                 </div>
                 <p className="mt-1 italic">&ldquo;{r.text}&rdquo;</p>
+                {r.postUrl ? (
+                  <a
+                    href={r.postUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-block text-sm font-medium text-primary underline-offset-2 hover:underline"
+                  >
+                    View
+                  </a>
+                ) : null}
               </li>
             ))}
           </ul>

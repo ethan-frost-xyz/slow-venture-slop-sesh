@@ -23,7 +23,7 @@ export class XPostProvider implements PostProvider {
 
     try {
       const userRes = await fetch(
-        `https://api.twitter.com/2/users/by/username/${encodeURIComponent(handle)}`,
+        `https://api.twitter.com/2/users/by/username/${encodeURIComponent(handle)}?user.fields=name`,
         {
           headers: { Authorization: `Bearer ${token}` },
           cache: "no-store",
@@ -35,14 +35,22 @@ export class XPostProvider implements PostProvider {
           error: `X user lookup failed (${userRes.status}).`,
         };
       }
-      const userJson = (await userRes.json()) as { data?: { id?: string } };
+      const userJson = (await userRes.json()) as {
+        data?: { id?: string; name?: string };
+      };
       const userId = userJson.data?.id;
       if (!userId) {
         return { ok: false, error: "X user not found or inaccessible." };
       }
+      const displayName = userJson.data?.name?.trim() || undefined;
 
+      const timelineQuery = new URLSearchParams({
+        max_results: "100",
+        "tweet.fields": "created_at,text,public_metrics,referenced_tweets",
+        expansions: "referenced_tweets.id",
+      });
       const timelineRes = await fetch(
-        `https://api.twitter.com/2/users/${userId}/tweets?max_results=100&tweet.fields=created_at,text,public_metrics`,
+        `https://api.twitter.com/2/users/${userId}/tweets?${timelineQuery.toString()}`,
         {
           headers: { Authorization: `Bearer ${token}` },
           cache: "no-store",
@@ -54,28 +62,44 @@ export class XPostProvider implements PostProvider {
           error: `X timeline fetch failed (${timelineRes.status}).`,
         };
       }
-      const timeline = (await timelineRes.json()) as {
-        data?: Array<{
-          id: string;
-          text?: string;
-          created_at?: string;
-          public_metrics?: { like_count?: number };
-        }>;
+      type TweetPayload = {
+        id: string;
+        text?: string;
+        created_at?: string;
+        public_metrics?: { like_count?: number };
+        referenced_tweets?: Array<{ type: string; id: string }>;
       };
+      const timeline = (await timelineRes.json()) as {
+        data?: TweetPayload[];
+        includes?: { tweets?: TweetPayload[] };
+      };
+      const refById = new Map(
+        (timeline.includes?.tweets ?? []).map((t) => [t.id, t]),
+      );
+      const mergedLikeCount = (t: TweetPayload): number | undefined => {
+        const nums: number[] = [];
+        const own = t.public_metrics?.like_count;
+        if (typeof own === "number") nums.push(own);
+        for (const ref of t.referenced_tweets ?? []) {
+          const expanded = refById.get(ref.id);
+          const n = expanded?.public_metrics?.like_count;
+          if (typeof n === "number") nums.push(n);
+        }
+        if (nums.length === 0) return undefined;
+        return Math.max(...nums);
+      };
+
       const posts: Post[] = (timeline.data ?? []).map((t) => ({
         id: t.id,
         text: t.text ?? "",
         createdAt: t.created_at ?? new Date().toISOString(),
-        likeCount:
-          typeof t.public_metrics?.like_count === "number"
-            ? t.public_metrics.like_count
-            : undefined,
+        likeCount: mergedLikeCount(t),
       }));
 
       return {
         ok: true,
         posts,
-        meta: { source: "live" },
+        meta: { source: "live", ...(displayName ? { displayName } : {}) },
       };
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Unknown error";

@@ -15,10 +15,14 @@ export type ScoreReceipt = {
   createdAt?: string;
   /** Public post URL (e.g. x.com/status/…) when applicable */
   postUrl?: string;
+  /** Like/favorite count when the ingest layer provided it */
+  likeCount?: number;
 };
 
 export type SlopScoreResult = {
   handle: string;
+  /** Public display name when the ingest layer provided it */
+  displayName?: string;
   scores: {
     openAI: number;
     anthropic: number;
@@ -43,6 +47,7 @@ export type SlopScoreResult = {
 
 export type ScoringInput = {
   handle: string;
+  displayName?: string;
   posts: Post[];
   meta: PostsFetchMeta;
 };
