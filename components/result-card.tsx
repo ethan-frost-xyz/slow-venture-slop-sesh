@@ -104,6 +104,27 @@ export function ResultCard({ result }: Props) {
                     </time>
                   ) : null}
                 </div>
+                {(r.flaggedOpenAI?.length ?? 0) > 0 ||
+                (r.flaggedAnthropic?.length ?? 0) > 0 ? (
+                  <div className="mt-1 space-y-0.5 text-[0.65rem] leading-tight text-muted-foreground">
+                    {(r.flaggedOpenAI?.length ?? 0) > 0 ? (
+                      <p>
+                        <span className="font-semibold text-emerald-600/90 dark:text-emerald-400/90">
+                          Flagged (OpenAI):
+                        </span>{" "}
+                        {r.flaggedOpenAI?.join(" · ") ?? ""}
+                      </p>
+                    ) : null}
+                    {(r.flaggedAnthropic?.length ?? 0) > 0 ? (
+                      <p>
+                        <span className="font-semibold text-orange-600/90 dark:text-orange-400/90">
+                          Flagged (Anthropic):
+                        </span>{" "}
+                        {r.flaggedAnthropic?.join(" · ") ?? ""}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
                 <p className="mt-1 italic">&ldquo;{r.text}&rdquo;</p>
                 {r.postUrl ? (
                   <a

@@ -10,6 +10,10 @@ export type ScoreReceipt = {
   text: string;
   /** Short pointer to the signal type for transparency */
   reason: string;
+  /** Literal substrings/patterns from the OpenAI scorer list that hit this text */
+  flaggedOpenAI?: string[];
+  /** Literal substrings/patterns from the Anthropic scorer list that hit this text */
+  flaggedAnthropic?: string[];
   /** ISO 8601 post time when this receipt maps to a real post */
   createdAt?: string;
   /** Public post URL (e.g. x.com/status/…) when applicable */

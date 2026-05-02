@@ -238,16 +238,34 @@ const ANTHROPIC_DIRECT_TERMS = [
   "claude 3.7",
 ];
 
+/** Substrings from OPENAI_DIRECT_TERMS (and regex fallbacks) that appear in normalized text */
+function flaggedOpenAIDirectPhrases(textNorm: string): string[] {
+  const found = new Set<string>();
+  for (const term of OPENAI_DIRECT_TERMS) {
+    if (textNorm.includes(term)) found.add(term);
+  }
+  if (/\bgpt\b/.test(textNorm)) found.add("gpt");
+  if (/\bo1\b/.test(textNorm)) found.add("o1");
+  if (/\bo3\b/.test(textNorm)) found.add("o3");
+  if (/\bo4\b/.test(textNorm)) found.add("o4");
+  return [...found].sort((a, b) => b.length - a.length || a.localeCompare(b));
+}
+
 function mentionsOpenAIDirect(textNorm: string): boolean {
-  if (OPENAI_DIRECT_TERMS.some((t) => textNorm.includes(t))) return true;
-  if (/\bgpt\b/.test(textNorm)) return true;
-  if (/\bo1\b/.test(textNorm) || /\bo3\b/.test(textNorm) || /\bo4\b/.test(textNorm))
-    return true;
-  return false;
+  return flaggedOpenAIDirectPhrases(textNorm).length > 0;
+}
+
+/** Substrings from ANTHROPIC_DIRECT_TERMS that appear in normalized text */
+function flaggedAnthropicDirectPhrases(textNorm: string): string[] {
+  const found = new Set<string>();
+  for (const term of ANTHROPIC_DIRECT_TERMS) {
+    if (textNorm.includes(term)) found.add(term);
+  }
+  return [...found].sort((a, b) => b.length - a.length || a.localeCompare(b));
 }
 
 function mentionsAnthropicDirect(textNorm: string): boolean {
-  return ANTHROPIC_DIRECT_TERMS.some((t) => textNorm.includes(t));
+  return flaggedAnthropicDirectPhrases(textNorm).length > 0;
 }
 
 function hasAiAnchor(textNorm: string): boolean {
@@ -366,8 +384,10 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
       continue;
     }
 
-    const openM = mentionsOpenAIDirect(textNorm);
-    const anthM = mentionsAnthropicDirect(textNorm);
+    const flaggedOpenAIDirect = flaggedOpenAIDirectPhrases(textNorm);
+    const flaggedAnthropicDirect = flaggedAnthropicDirectPhrases(textNorm);
+    const openM = flaggedOpenAIDirect.length > 0;
+    const anthM = flaggedAnthropicDirect.length > 0;
     const { openaiVer, anthropicVer } = extractVersionSignals(textNorm);
     const openMFinal = openM || openaiVer;
     const anthMFinal = anthM || anthropicVer;
@@ -430,8 +450,20 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
       if (boostN > 0) bits.push("booster phrasing");
       if (hasHypeSignal(textNorm) && !openM && !anthM) bits.push("hype only");
       if (bits.length === 0) bits.push("general AI");
+
+      const flaggedOpenAI = [
+        ...flaggedOpenAIDirect,
+        ...(openaiVer ? ["(OpenAI-style version cue in text)"] : []),
+      ];
+      const flaggedAnthropic = [
+        ...flaggedAnthropicDirect,
+        ...(anthropicVer ? ["(Anthropic-style version cue in text)"] : []),
+      ];
+
       receipts.push({
         reason: bits.join(" · "),
+        ...(flaggedOpenAI.length > 0 ? { flaggedOpenAI } : {}),
+        ...(flaggedAnthropic.length > 0 ? { flaggedAnthropic } : {}),
         text: truncate(p.text, 140),
         createdAt: p.createdAt,
         postUrl: publicPostUrl(handle, p.id),
