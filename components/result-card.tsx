@@ -23,20 +23,22 @@ type Props = {
 
 type LabScores = SlopScoreResult["scores"];
 
-type RefereeResponse = {
+type GrokDecideResponse = {
   scores: LabScores;
-  oneLiner?: string;
+  recap: string;
 };
 
-function isRefereeResponse(data: unknown): data is RefereeResponse {
+function isGrokDecideResponse(data: unknown): data is GrokDecideResponse {
   if (typeof data !== "object" || data === null || "error" in data) return false;
   const scores = (data as { scores?: unknown }).scores;
   if (typeof scores !== "object" || scores === null) return false;
   const s = scores as Record<string, unknown>;
+  const recap = (data as { recap?: unknown }).recap;
   return (
     typeof s.openAI === "number" &&
     typeof s.anthropic === "number" &&
-    typeof s.tossUp === "number"
+    typeof s.tossUp === "number" &&
+    typeof recap === "string"
   );
 }
 
@@ -54,7 +56,7 @@ export function ResultCard({ result }: Props) {
   } = result;
 
   const [refereeScores, setRefereeScores] = useState<LabScores | null>(null);
-  const [refereeOneLiner, setRefereeOneLiner] = useState<string | null>(null);
+  const [grokRecap, setGrokRecap] = useState<string | null>(null);
   const [refereeError, setRefereeError] = useState<string | null>(null);
   const [refereeLoading, setRefereeLoading] = useState(false);
 
@@ -70,7 +72,7 @@ export function ResultCard({ result }: Props) {
   const showRefereeButton = scores.tossUp > 0;
   const displayScores = refereeScores ?? scores;
 
-  async function runReferee() {
+  async function letGrokDecide() {
     setRefereeError(null);
     setRefereeLoading(true);
     try {
@@ -87,20 +89,16 @@ export function ResultCard({ result }: Props) {
           "error" in data &&
           typeof (data as { error?: unknown }).error === "string"
             ? (data as { error: string }).error
-            : "Referee failed. Try again.";
+            : "Request failed. Try again.";
         setRefereeError(msg);
         return;
       }
-      if (!isRefereeResponse(data)) {
-        setRefereeError("Unexpected response from Referee.");
+      if (!isGrokDecideResponse(data)) {
+        setRefereeError("Unexpected response from Grok.");
         return;
       }
       setRefereeScores(data.scores);
-      setRefereeOneLiner(
-        typeof data.oneLiner === "string" && data.oneLiner.trim().length > 0
-          ? data.oneLiner.trim()
-          : null,
-      );
+      setGrokRecap(data.recap.trim());
     } catch {
       setRefereeError("Network error. Try again.");
     } finally {
@@ -152,7 +150,7 @@ export function ResultCard({ result }: Props) {
           <div className={refereeScores ? "animate-in fade-in duration-500" : ""}>
             {refereeScores ? (
               <p className="mb-1 text-center text-[0.65rem] font-semibold uppercase tracking-wider text-foreground">
-                After · Referee
+                After · Grok
               </p>
             ) : null}
             <ScoreSpectrum
@@ -166,26 +164,29 @@ export function ResultCard({ result }: Props) {
             <div className="flex flex-col items-center gap-2 pt-1">
               <Button
                 type="button"
-                className="min-w-[10rem] animate-in fade-in duration-300 motion-safe:transition-[transform,box-shadow] motion-safe:duration-200 motion-safe:ease-out motion-safe:hover:-translate-y-0.5 motion-safe:hover:shadow-lg motion-safe:active:translate-y-px motion-safe:active:shadow-sm"
+                className="min-w-[12rem] animate-in fade-in duration-300 motion-safe:transition-[transform,box-shadow] motion-safe:duration-200 motion-safe:ease-out motion-safe:hover:-translate-y-0.5 motion-safe:hover:shadow-lg motion-safe:active:translate-y-px motion-safe:active:shadow-sm gap-2"
                 disabled={refereeLoading || refereeScores !== null}
                 aria-busy={refereeLoading}
-                onClick={runReferee}
+                onClick={letGrokDecide}
               >
                 {refereeLoading ? (
                   <>
                     <Loader2 className="size-4 animate-spin" aria-hidden />
-                    Referee thinking…
+                    Grok is deciding…
                   </>
                 ) : refereeScores ? (
-                  "Referee done"
+                  "Grok decided"
                 ) : (
-                  "Run Referee"
+                  "Let Grok decide"
                 )}
               </Button>
-              {refereeOneLiner ? (
-                <p className="max-w-prose text-center text-sm italic text-muted-foreground">
-                  {refereeOneLiner}
-                </p>
+              {grokRecap ? (
+                <div className="w-full max-w-prose rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5 text-left">
+                  <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Why the score shifted
+                  </p>
+                  <p className="mt-1.5 text-sm leading-snug text-foreground">{grokRecap}</p>
+                </div>
               ) : null}
             </div>
           ) : null}
@@ -194,7 +195,7 @@ export function ResultCard({ result }: Props) {
       <CardContent className="space-y-5 pt-2">
         {refereeError ? (
           <Alert variant="destructive">
-            <AlertTitle>Referee declined</AlertTitle>
+            <AlertTitle>Grok could not decide</AlertTitle>
             <AlertDescription>{refereeError}</AlertDescription>
           </Alert>
         ) : null}
@@ -215,7 +216,7 @@ export function ResultCard({ result }: Props) {
             </div>
             <div className="animate-in fade-in duration-500">
               <p className="mb-2 text-center text-[0.65rem] font-semibold uppercase tracking-wider text-foreground">
-                After · Referee
+                After · Grok
               </p>
               <div className="grid grid-cols-3 gap-3 text-center sm:gap-4">
                 <ScorePill

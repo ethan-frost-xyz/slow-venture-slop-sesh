@@ -1,13 +1,13 @@
 /**
- * Referee: redistributes toss-up % into Open vs Anthropic via OpenRouter.
- * Env: OPENROUTER_API_KEY (required). Optional: OPENROUTER_REFEREE_MODEL (default openai/gpt-4o-mini).
+ * Grok (via OpenRouter): redistributes toss-up % into Open vs Anthropic.
+ * Env: OPENROUTER_API_KEY (required). Optional: OPENROUTER_REFEREE_MODEL (default x-ai/grok-2-mini).
  */
 import type { ScoreReceipt } from "@/lib/scoring/types";
 import { NextResponse } from "next/server";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
-const DEFAULT_REFEREE_MODEL = "openai/gpt-4o-mini";
+const DEFAULT_REFEREE_MODEL = "x-ai/grok-2-mini";
 const MAX_TWEETS_IN_PROMPT = 12;
 
 type Body = {
@@ -69,7 +69,7 @@ export async function POST(request: Request) {
   const apiKey = process.env.OPENROUTER_API_KEY?.trim();
   if (!apiKey) {
     return NextResponse.json(
-      { error: "Referee is not configured (missing OPENROUTER_API_KEY)." },
+      { error: "Grok tie-breaker is not configured (missing OPENROUTER_API_KEY)." },
       { status: 503 },
     );
   }
@@ -99,7 +99,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "Nothing to referee: need toss-up mass and at least one toss-up receipt. Re-score after deploy if receipts lack flags.",
+          "Nothing to decide: need toss-up mass and at least one toss-up receipt. Re-score if receipts lack flags.",
       },
       { status: 400 },
     );
@@ -107,16 +107,17 @@ export async function POST(request: Request) {
 
   const lines = tossUpReceipts.map((r, i) => `${i + 1}. ${r.text.replace(/\s+/g, " ").trim()}`);
 
-  const userPrompt = `These posts mention both OpenAI-ish and Anthropic-ish lab signals (ambiguous). For overall vibe, what fraction of the "toss-up" alignment should lean Anthropic vs OpenAI?
+  const userPrompt = `These posts mention both OpenAI-ish and Anthropic-ish lab signals (ambiguous). Decide how to split the toss-up bucket.
 
 Current lab split (percent, sums to ~100): OpenAI-coded ${o.toFixed(1)}%, Anthropic-coded ${a.toFixed(1)}%, toss-up ${t.toFixed(1)}%.
 
 Posts:
 ${lines.join("\n")}
 
-Reply with ONLY valid JSON, no other text: {"anthropicShareOfTossUp": <number between 0 and 1>, "oneLiner": "<optional short joke, max 120 chars>"}
+Reply with ONLY valid JSON, no other text:
+{"anthropicShareOfTossUp": <number 0-1>, "recap": "<required: 2-4 sentences. Explain WHY you moved the ${t.toFixed(1)}% toss-up the way you did—cite tone, which lab's vibe reads stronger, and how Open vs Anthropic scores shift. Plain language, no markdown>"}
 
-Meaning: anthropicShareOfTossUp is how much of the ${t.toFixed(1)}% toss-up bucket moves to Anthropic-coded; the rest of that bucket moves to OpenAI-coded. After refereeing, toss-up becomes 0.`;
+anthropicShareOfTossUp = fraction of the ${t.toFixed(1)}% toss-up that moves to Anthropic-coded; the rest goes to OpenAI-coded. New toss-up = 0.`;
 
   const model =
     process.env.OPENROUTER_REFEREE_MODEL?.trim() || DEFAULT_REFEREE_MODEL;
@@ -133,7 +134,7 @@ Meaning: anthropicShareOfTossUp is how much of the ${t.toFixed(1)}% toss-up buck
           : {}),
         ...(process.env.OPENROUTER_APP_TITLE
           ? { "X-Title": process.env.OPENROUTER_APP_TITLE }
-          : { "X-Title": "Slop Referee" }),
+          : { "X-Title": "Slop · Grok decide" }),
       },
       body: JSON.stringify({
         model,
@@ -142,7 +143,7 @@ Meaning: anthropicShareOfTossUp is how much of the ${t.toFixed(1)}% toss-up buck
           {
             role: "system",
             content:
-              "You judge which big-lab posting vibe dominates in ambiguous tweets. Output only the JSON object requested.",
+              "You are Grok judging ambiguous X posts for OpenAI-coded vs Anthropic-coded vibe. Output only the JSON object requested; recap must justify the numeric split.",
           },
           { role: "user", content: userPrompt },
         ],
@@ -153,7 +154,7 @@ Meaning: anthropicShareOfTossUp is how much of the ${t.toFixed(1)}% toss-up buck
       const errText = await res.text();
       console.error("[referee] OpenRouter error", res.status, errText.slice(0, 500));
       return NextResponse.json(
-        { error: "Referee model request failed. Try again." },
+        { error: "Grok request failed. Try again." },
         { status: 502 },
       );
     }
@@ -168,18 +169,18 @@ Meaning: anthropicShareOfTossUp is how much of the ${t.toFixed(1)}% toss-up buck
     assistantText = content;
   } catch (e) {
     console.error("[referee]", e);
-    return NextResponse.json({ error: "Network error calling Referee." }, { status: 502 });
+    return NextResponse.json({ error: "Network error calling Grok." }, { status: 502 });
   }
 
   let parsed: unknown;
   try {
     parsed = parseAssistantJson(assistantText);
   } catch {
-    return NextResponse.json({ error: "Could not parse Referee output." }, { status: 502 });
+    return NextResponse.json({ error: "Could not parse Grok output." }, { status: 502 });
   }
 
   if (typeof parsed !== "object" || parsed === null || !("anthropicShareOfTossUp" in parsed)) {
-    return NextResponse.json({ error: "Referee JSON missing anthropicShareOfTossUp." }, { status: 502 });
+    return NextResponse.json({ error: "Grok JSON missing anthropicShareOfTossUp." }, { status: 502 });
   }
 
   const shareRaw = (parsed as { anthropicShareOfTossUp: unknown }).anthropicShareOfTossUp;
@@ -202,14 +203,17 @@ Meaning: anthropicShareOfTossUp is how much of the ${t.toFixed(1)}% toss-up buck
     }
   }
 
-  const oneLinerRaw = (parsed as { oneLiner?: unknown }).oneLiner;
-  const oneLiner =
-    typeof oneLinerRaw === "string" && oneLinerRaw.trim().length > 0
-      ? oneLinerRaw.trim().slice(0, 160)
-      : undefined;
+  const recapRaw = (parsed as { recap?: unknown }).recap;
+  let recap =
+    typeof recapRaw === "string" && recapRaw.trim().length > 0
+      ? recapRaw.trim().slice(0, 800)
+      : "";
+  if (!recap) {
+    recap = `Grok assigned about ${(share * 100).toFixed(0)}% of the ${t.toFixed(1)}% toss-up to Anthropic-coded and ${((1 - share) * 100).toFixed(0)}% to OpenAI-coded (${o.toFixed(1)}% → ${newOpen.toFixed(1)}% Open, ${a.toFixed(1)}% → ${newAnth.toFixed(1)}% Anthropic), based on the mixed-signal posts above.`;
+  }
 
   return NextResponse.json({
     scores: { openAI: newOpen, anthropic: newAnth, tossUp: newToss },
-    ...(oneLiner ? { oneLiner } : {}),
+    recap,
   });
 }

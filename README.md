@@ -37,18 +37,18 @@ If the live request fails or returns an empty timeline, the app falls back to **
 | `SLOP_TRY_LIVE_X` | `1` = try live fetch before fallback |
 | `SLOP_FORCE_MOCK` | `1` = never call live X |
 
-## Referee (OpenRouter)
+## Grok tie-breaker (OpenRouter)
 
-Optional LLM tie-breaker for **toss-up** mass. Set a server-side key (never commit real keys):
+Optional LLM that resolves **toss-up** mass. The UI button is **Let Grok decide** (default model **`x-ai/grok-2-mini`** via OpenRouter). Override with `OPENROUTER_REFEREE_MODEL` if you want another Grok or non-xAI model.
 
 | Variable | Purpose |
 |----------|---------|
-| `OPENROUTER_API_KEY` | [OpenRouter](https://openrouter.ai/) API key — required for **Run Referee** |
-| `OPENROUTER_REFEREE_MODEL` | Optional model id (default `openai/gpt-4o-mini`) |
+| `OPENROUTER_API_KEY` | [OpenRouter](https://openrouter.ai/) API key — required for **Let Grok decide** |
+| `OPENROUTER_REFEREE_MODEL` | Optional model id (default `x-ai/grok-2-mini`) |
 | `OPENROUTER_HTTP_REFERER` | Optional site URL for OpenRouter rankings |
 | `OPENROUTER_APP_TITLE` | Optional app title for OpenRouter rankings |
 
-Without `OPENROUTER_API_KEY`, the Referee button still appears when there is toss-up mass; the API returns **503** with a clear message.
+Without `OPENROUTER_API_KEY`, the button still appears when there is toss-up mass; the API returns **503** with a clear message.
 
 ## Architecture (where things live)
 
