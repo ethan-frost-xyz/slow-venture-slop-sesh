@@ -414,9 +414,8 @@ const VIBE_DELTA_BAND = 12;
  * Vibe headline from lab split percentages — same rules as the tail of {@link scoreSlopVibes}
  * (for UI after Grok reallocates toss-up into Open vs Anthropic).
  *
- * Tiers use symmetric bands of {@link VIBE_DELTA_BAND} points: neutral within ±band, then mild /
- * medium / strong each span one more band (no empirical distribution in-repo — uniform spacing
- * keeps the joke ladder predictable and even on both labs).
+ * Tiers use symmetric bands of {@link VIBE_DELTA_BAND} points from parity: neutral within ±band,
+ * then four outward steps (mild → … → extreme) on each side — equal width in Δ space.
  */
 export function vibeHeadlineFromLabPercents(o: number, a: number, t: number): string {
   if (t >= o && t >= a && t >= 38) {
@@ -424,9 +423,11 @@ export function vibeHeadlineFromLabPercents(o: number, a: number, t: number): st
   }
   const delta = o - a;
   const b = VIBE_DELTA_BAND;
-  if (delta > 3 * b) return "Says ‘we’ when OpenAI ships something";
+  if (delta > 4 * b) return "Says ‘we’ when OpenAI ships something";
+  if (delta > 3 * b) return "Gets misty when they ship a context window bump";
   if (delta > 2 * b) return "Thought Sora was something special";
   if (delta > b) return "Believes Codex is better but never tried CC";
+  if (delta < -4 * b) return "Would skip a wedding for an Opus priority window";
   if (delta < -3 * b) return "Rate limit kink";
   if (delta < -2 * b) return "Started vibecoding in late 2025 early 2026";
   if (delta < -b) return "Negative on Data Centers when at Bushwick houseparties";
