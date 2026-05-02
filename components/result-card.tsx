@@ -21,7 +21,7 @@ export function ResultCard({ result }: Props) {
     meta.source === "live"
       ? "Live posts"
       : meta.source === "mock"
-        ? "Demo fixture"
+        ? "Sample posts"
         : "Fallback sample";
 
   return (

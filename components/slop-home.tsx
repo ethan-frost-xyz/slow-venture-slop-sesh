@@ -2,7 +2,6 @@
 
 import { useCallback, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ExamplesRow } from "@/components/examples-row";
 import { HandleForm } from "@/components/handle-form";
 import { ResultCard } from "@/components/result-card";
 import { StateMessage } from "@/components/state-message";
@@ -21,7 +20,7 @@ export function SlopHome() {
   const runScore = useCallback(async (raw: string) => {
     const h = raw.trim().replace(/^@+/, "");
     if (!h) {
-      setError("Enter a profile handle—or tap a demo below.");
+      setError("Enter a public X username.");
       setResult(null);
       return;
     }
@@ -38,14 +37,14 @@ export function SlopHome() {
       if (!res.ok || "error" in data) {
         setResult(null);
         setError(
-          "error" in data ? data.error : "Something went wrong. Try a demo.",
+          "error" in data ? data.error : "Something went wrong. Try again.",
         );
         return;
       }
       setResult(data);
     } catch {
       setResult(null);
-      setError("Network hiccup. Demos still work offline.");
+      setError("Network error. Check your connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -65,7 +64,7 @@ export function SlopHome() {
             score for a profile
           </h1>
           <p className="mx-auto mt-3 max-w-lg text-sm text-muted-foreground sm:text-base">
-            Enter a public X handle to review that profile’s{" "}
+            Enter a public X handle to review that profile&apos;s{" "}
             <strong>slop alignment score</strong>—how their posts resemble
             OpenAI-coded vs Anthropic-coded hype vs neutral/indie tone. Not
             employment, bribery, or sponsorship.
@@ -79,14 +78,6 @@ export function SlopHome() {
           onChange={setHandle}
           disabled={loading}
           onSubmit={() => runScore(handle)}
-        />
-
-        <ExamplesRow
-          disabled={loading}
-          onPick={(h) => {
-            setHandle(h);
-            void runScore(h);
-          }}
         />
 
         {error ? (
@@ -117,7 +108,7 @@ export function SlopHome() {
         !touched ? (
           <StateMessage
             title="Pick a profile to review"
-            description="Try a demo profile below (@gpt_hype_architect, @claude_maximalist, @indieposter_9000) or enter any handle—we’ll mock or fall back if live X is unavailable."
+            description="Enter a handle above. Without live X access, scores use deterministic synthetic sample posts—not the profile’s real timeline."
           />
         ) : null}
       </main>

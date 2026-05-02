@@ -5,7 +5,7 @@ import { normalizeHandle } from "@/lib/providers/types";
 import { XPostProvider } from "@/lib/providers/x-provider";
 
 /**
- * Resolves posts for a handle: tries live X when enabled, then mock/demo fallback.
+ * Resolves posts for a handle: tries live X when enabled, then synthetic/mock fallback.
  */
 export async function resolvePostsForHandle(
   rawHandle: string,
