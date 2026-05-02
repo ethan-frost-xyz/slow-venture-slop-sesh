@@ -134,6 +134,13 @@ function hasStrongNegative(textNorm: string): boolean {
   return false;
 }
 
+function mentionsElon(textNorm: string): boolean {
+  if (/\belon\b/.test(textNorm)) return true;
+  if (textNorm.includes("elon musk")) return true;
+  if (textNorm.includes("elonmusk")) return true;
+  return false;
+}
+
 /** OpenAI-scoped terms for directed sentiment and AI relevance (exclusive vs broad bucket). */
 /** Matching uses {@link normalizeForLabTerms} so gpt-5 / gpt 5 / gpt 5 align; list uses hyphen forms where natural. */
 const OPENAI_DIRECT_TERMS = [
@@ -198,7 +205,6 @@ const OPENAI_DIRECT_TERMS = [
   "codex-mini-latest",
   "operator",
   "deep research",
-  "canvas",
   "realtime api",
   "gpt-realtime",
   "gpt-audio",
@@ -321,6 +327,13 @@ function isAiRelevantTweet(textNorm: string): boolean {
   return false;
 }
 
+/** Remove Grok x.y version cues so bare `4.1`… heuristics do not count as Anthropic. */
+function stripGrokDecimalVersions(lab: string): string {
+  return lab
+    .replace(/\bgrok\s+4\.\d\b/g, " ")
+    .replace(/\b4\.\d\s+grok\b/g, " ");
+}
+
 function extractVersionSignals(textNorm: string): {
   openaiVer: boolean;
   anthropicVer: boolean;
@@ -334,9 +347,11 @@ function extractVersionSignals(textNorm: string): {
   const anthropicVerPattern =
     /\b4\.\d\b|\b3\.\d\b|\bclaude\s*[34]\b|\bmodel\s*[34]\b|\bversion\s*[34]\b/;
 
+  const labSansGrokVersions = stripGrokDecimalVersions(lab);
+
   return {
     openaiVer: openaiVerPattern.test(lab),
-    anthropicVer: anthropicVerPattern.test(lab),
+    anthropicVer: anthropicVerPattern.test(labSansGrokVersions),
   };
 }
 
@@ -488,6 +503,8 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
     const openMFinal = openM || openaiVer;
     const anthMFinal = anthM || anthropicVer;
     const neg = hasStrongNegative(textNorm);
+    /** Routes OpenAI credit away when Elon co-occurs with an OpenAI signal (Anthropic branch still uses `neg` only). */
+    const negOpenAI = neg || (openMFinal && mentionsElon(textNorm));
     const boostN = hasBooster(textNorm);
 
     let dOpen = 0;
@@ -501,7 +518,7 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
         (onlyOpen || onlyAnth) && hasHypeSignal(textNorm) && boostN > 0;
 
       if (openMFinal) {
-        if (neg) {
+        if (negOpenAI) {
           // Credit the other lab like a quiet positive for that lab (same w/BASE/lean as non-neg branch).
           dAnth +=
             w * BASE_POS * 0.85 * (!anthMFinal ? 1.1 : 0.95);
@@ -550,12 +567,19 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
     }
 
     if (receipts.length < 25) {
+      const receiptNegative =
+        (negOpenAI && openMFinal) ||
+        (neg && (openMFinal || anthMFinal));
+      const receiptPositive =
+        (openMFinal || anthMFinal) &&
+        !neg &&
+        !(negOpenAI && openMFinal);
+
       const bits: string[] = [];
       if (openMFinal) bits.push("OpenAI/GPT signal");
       if (anthMFinal) bits.push("Anthropic/Claude signal");
       if (openaiVer || anthropicVer) bits.push("version signal");
-      if (neg && (openMFinal || anthMFinal))
-        bits.push("negative → other lab");
+      if (receiptNegative) bits.push("negative → other lab");
       if (boostN > 0 && (openMFinal || anthMFinal))
         bits.push("booster phrasing");
       if (hasHypeSignal(textNorm) && !openM && !anthM) bits.push("hype only");
@@ -577,9 +601,9 @@ export function scoreSlopVibes(input: ScoringInput): SlopScoreResult {
         ...(flaggedOpenAI.length > 0 ? { flaggedOpenAI } : {}),
         ...(flaggedAnthropic.length > 0 ? { flaggedAnthropic } : {}),
         ...(isTossUpContributor ? { isTossUpContributor: true } : {}),
-        ...(neg && (openMFinal || anthMFinal)
+        ...(receiptNegative
           ? { negativeLabMention: true }
-          : (openMFinal || anthMFinal) && !neg
+          : receiptPositive
             ? { positiveLabMention: true }
             : {}),
         text: truncate(p.text, 140),
