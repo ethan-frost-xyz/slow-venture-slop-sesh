@@ -160,36 +160,6 @@ export function ResultCard({ result }: Props) {
               caption="Lab split sums to 100% across posts that mention at least one lab. General AI chatter excluded."
             />
           </div>
-          {showRefereeButton ? (
-            <div className="flex flex-col items-center gap-2 pt-1">
-              <Button
-                type="button"
-                className="min-w-[12rem] animate-in fade-in duration-300 motion-safe:transition-[transform,box-shadow] motion-safe:duration-200 motion-safe:ease-out motion-safe:hover:-translate-y-0.5 motion-safe:hover:shadow-lg motion-safe:active:translate-y-px motion-safe:active:shadow-sm gap-2"
-                disabled={refereeLoading || refereeScores !== null}
-                aria-busy={refereeLoading}
-                onClick={letGrokDecide}
-              >
-                {refereeLoading ? (
-                  <>
-                    <Loader2 className="size-4 animate-spin" aria-hidden />
-                    Grok is deciding…
-                  </>
-                ) : refereeScores ? (
-                  "Grok decided"
-                ) : (
-                  "Let Grok decide"
-                )}
-              </Button>
-              {grokRecap ? (
-                <div className="w-full max-w-prose rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5 text-left">
-                  <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Why the score shifted
-                  </p>
-                  <p className="mt-1.5 text-sm leading-snug text-foreground">{grokRecap}</p>
-                </div>
-              ) : null}
-            </div>
-          ) : null}
         </div>
       </CardHeader>
       <CardContent className="space-y-5 pt-2">
@@ -247,6 +217,36 @@ export function ResultCard({ result }: Props) {
                 {t}
               </Badge>
             ))}
+          </div>
+        ) : null}
+        {showRefereeButton ? (
+          <div className="flex flex-col items-center gap-2 border-t border-border/50 pt-4">
+            <Button
+              type="button"
+              className="min-w-[12rem] animate-in fade-in duration-300 motion-safe:transition-[transform,box-shadow] motion-safe:duration-200 motion-safe:ease-out motion-safe:hover:-translate-y-0.5 motion-safe:hover:shadow-lg motion-safe:active:translate-y-px motion-safe:active:shadow-sm gap-2"
+              disabled={refereeLoading || refereeScores !== null}
+              aria-busy={refereeLoading}
+              onClick={letGrokDecide}
+            >
+              {refereeLoading ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" aria-hidden />
+                  Grok is deciding…
+                </>
+              ) : refereeScores ? (
+                "Grok decided"
+              ) : (
+                "Let Grok decide"
+              )}
+            </Button>
+            {grokRecap ? (
+              <div className="w-full max-w-prose rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5 text-left">
+                <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Why the score shifted
+                </p>
+                <p className="mt-1.5 text-sm leading-snug text-foreground">{grokRecap}</p>
+              </div>
+            ) : null}
           </div>
         ) : null}
         <div>
